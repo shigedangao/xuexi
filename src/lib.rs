@@ -1,4 +1,5 @@
 mod character;
+mod cedict;
 
 use character::Characters;
 
