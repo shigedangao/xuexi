@@ -2,6 +2,7 @@ mod character;
 mod cedict;
 
 use character::Characters;
+use cedict::Dictionnary;
 
 pub async fn get_character_by_usage(content: &str) -> Vec<(char, i128)> {
     let mut handler = Characters::new(content);
@@ -10,6 +11,6 @@ pub async fn get_character_by_usage(content: &str) -> Vec<(char, i128)> {
     handler.get_ordered_characters()
 }
 
-pub async fn get_words_by_usage(content: &str) -> Vec<(String, i128)> {
-    Vec::new()
+pub fn load_dictionnary() -> Dictionnary {
+    Dictionnary::new()
 }

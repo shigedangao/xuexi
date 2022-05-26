@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::io::{BufReader, BufRead};
 
 #[derive(Debug, Default, Clone)]
-struct Cedict {
+pub struct Cedict {
     traditional_character: String,
     simplify_character: String,
     pinyin: String,
@@ -15,6 +15,7 @@ pub struct Dictionnary {
 }
 
 impl Dictionnary {
+    /// Create a new Dictionnary from the cedict_ts.u8
     pub fn new() -> Dictionnary {
         let mut dic = HashMap::new();
         let cedict: &[u8] = include_bytes!("../cedict_ts.u8");
@@ -54,14 +55,19 @@ impl Dictionnary {
         Dictionnary { dic }
     }
 
-    fn get_dictionnary_for_sentence(&self, sentence: &str) -> Vec<Cedict> {
+    /// Get a dictionnary based on the loaded cedict dictionnary from a given sentence
+    /// 
+    /// # Arguments
+    /// 
+    /// * `sentence` - A string slice which represent a sentence
+    fn get_dictionnary_for_sentence(&self, sentence: &str) -> HashMap<String, (Cedict, i64)> {
         let mut start_cursor = 0;
         let mut end_cursor = 1;
         let mut done = false;
         // flag used to count the number of character unmatched
         // this is to avoid a case where we can do an infinite loop on a single character
         let mut unmatched = 0;
-        let mut dictionnary = Vec::new();
+        let mut dictionnary = HashMap::new();
 
         let characters: Vec<char> = sentence.chars().collect();
 
@@ -73,7 +79,7 @@ impl Dictionnary {
                 Some(definition) => {
                     def = definition.clone();
                     if end_cursor == characters.len() {
-                        dictionnary.push(def.clone());
+                        insert_map_word(&mut dictionnary, def.clone());
                         done = true;
                     }
 
@@ -96,7 +102,7 @@ impl Dictionnary {
                         }
                     } else {
                         // Push the latest founded item in the dictionnary
-                        dictionnary.push(def.clone());
+                        insert_map_word(&mut dictionnary, def.clone());
                         // if nothing can be found on the dictionnary then we move the start_cursor to end_cursor - 1
                         // this allow us to check the last -1 character again
                         // for example
@@ -119,6 +125,20 @@ impl Dictionnary {
     }
 }
 
+/// Insert a definition in a map
+/// 
+/// # Arguments
+/// 
+/// * `map` - A mutable reference to a HashMap
+/// * `item` - A Cedict item which we'll be insert
+fn insert_map_word(map: &mut HashMap<String, (Cedict, i64)>, item: Cedict) {
+    if let Some((_, v)) = map.get_mut(&item.traditional_character) {
+        *v = *v + 1;
+    } else {
+        map.insert(item.traditional_character.to_string(), (item, 1));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -127,20 +147,42 @@ mod tests {
     fn expect_to_get_dictionnary() {
         let dictionnary = Dictionnary::new();
         let res = dictionnary.dic.get("上");
-        println!("{res:?}");
+        
+        assert!(res.is_some());
+        let shang = res.unwrap();
+        assert_eq!(shang.traditional_character, "上");
     }
 
     #[test]
     fn expect_to_get_dictionnary_for_sentence() {
         let dictionnary = Dictionnary::new();
         let def = dictionnary.get_dictionnary_for_sentence("去年今夜");
-        println!("{def:?}");
+        
+        let qu = def.get("去年");
+        assert!(qu.is_some());
+
+        let (qu_def, qu_count) = qu.unwrap();
+        assert_eq!(qu_def.traditional_character, "去年");
+        assert_eq!(*qu_count, 1);
     }
 
     #[test]
     fn expect_to_get_dictionnary_for_complicated_sentence() {
         let dictionnary = Dictionnary::new();
-        let def = dictionnary.get_dictionnary_for_sentence("去年今夜中國人同醉月明花樹下lol台灣");
-        println!("{def:?}");
+        let def = dictionnary.get_dictionnary_for_sentence("去年今夜中國人同醉月明花樹下lol台灣去年");
+        
+        let qu = def.get("去年");
+        assert!(qu.is_some());
+
+        let (qu_def, qu_count) = qu.unwrap();
+        assert_eq!(qu_def.traditional_character, "去年");
+        assert_eq!(*qu_count, 2);
+
+        let taiwan = def.get("台灣");
+        assert!(taiwan.is_some());
+
+        let (taiwan_def, taiwan_count) = taiwan.unwrap();
+        assert_eq!(taiwan_def.traditional_character, "台灣");
+        assert_eq!(*taiwan_count, 1);
     }
 }

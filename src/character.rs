@@ -14,6 +14,10 @@ pub struct Characters {
 
 impl Characters {
     /// Create a new Characters struct with the content that needs to be parsed
+    /// 
+    /// # Arguments
+    /// 
+    /// * `content` - A slice of content (text, sentences)
     pub fn new(content: &str) -> Self {
         Characters { content: content.to_owned(), unordered_list: BTreeMap::new() }
     }
@@ -53,6 +57,10 @@ impl Characters {
     }
 
     /// Count character for a sentence
+    /// 
+    /// # Arguments
+    /// 
+    /// * `sentence` - A slice of string which represent a sentence
     async fn count_char_for_sentence(&self, sentence: String) -> BTreeMap<char, i128> {
         let mut m: BTreeMap<char, i128> = BTreeMap::new();
         let chars = sentence.chars();
@@ -69,6 +77,10 @@ impl Characters {
     }
 
     /// Remove punctuation from a sentence to avoid being count
+    /// 
+    /// # Arguments
+    /// 
+    /// * `sentence` - A slice of string which represent a sentence
     fn remove_punctuation_from_sentence(&self, sentence: &str) -> String {
         sentence
             .replace(PUNC_FULL_STOP, "")
