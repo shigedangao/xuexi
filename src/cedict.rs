@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::io::{BufReader, BufRead};
+use super::Char;
 
 #[derive(Debug, Default, Clone)]
 pub struct Cedict {
@@ -11,7 +12,8 @@ pub struct Cedict {
 
 #[derive(Debug)]
 pub struct Dictionnary {
-    dic: HashMap<String, Cedict>
+    dic: HashMap<String, Cedict>,
+    sentence_dictionnary: HashMap<String, (Cedict, i64)>
 }
 
 impl Dictionnary {
@@ -52,7 +54,7 @@ impl Dictionnary {
             dic.insert(item.traditional_character.to_owned(), item);
         }
 
-        Dictionnary { dic }
+        Dictionnary { dic, sentence_dictionnary: HashMap::new() }
     }
 
     /// Get a dictionnary based on the loaded cedict dictionnary from a given sentence
@@ -60,7 +62,7 @@ impl Dictionnary {
     /// # Arguments
     /// 
     /// * `sentence` - A string slice which represent a sentence
-    fn get_dictionnary_for_sentence(&self, sentence: &str) -> HashMap<String, (Cedict, i64)> {
+    fn get_dictionnary_for_sentence(&mut self, sentence: &str) {
         let mut start_cursor = 0;
         let mut end_cursor = 1;
         let mut done = false;
@@ -121,7 +123,16 @@ impl Dictionnary {
 
         }
 
-        dictionnary
+        self.sentence_dictionnary = dictionnary
+    }
+}
+
+impl Char<(String, (Cedict, i64))> for Dictionnary {
+    fn get_ordered_characters(self) -> Vec<(String, (Cedict, i64))> {
+        let mut vec = Vec::from_iter(self.sentence_dictionnary.into_iter());
+        vec.sort_by(|(_, (_, a)), (_, (_, b))| b.cmp(a));
+
+        vec
     }
 }
 
@@ -155,10 +166,10 @@ mod tests {
 
     #[test]
     fn expect_to_get_dictionnary_for_sentence() {
-        let dictionnary = Dictionnary::new();
-        let def = dictionnary.get_dictionnary_for_sentence("去年今夜");
+        let mut dictionnary = Dictionnary::new();
+        dictionnary.get_dictionnary_for_sentence("去年今夜");
         
-        let qu = def.get("去年");
+        let qu = dictionnary.sentence_dictionnary.get("去年");
         assert!(qu.is_some());
 
         let (qu_def, qu_count) = qu.unwrap();
@@ -168,17 +179,17 @@ mod tests {
 
     #[test]
     fn expect_to_get_dictionnary_for_complicated_sentence() {
-        let dictionnary = Dictionnary::new();
-        let def = dictionnary.get_dictionnary_for_sentence("去年今夜中國人同醉月明花樹下lol台灣去年");
+        let mut dictionnary = Dictionnary::new();
+        dictionnary.get_dictionnary_for_sentence("去年今夜中國人同醉月明花樹下lol台灣去年");
         
-        let qu = def.get("去年");
+        let qu = dictionnary.sentence_dictionnary.get("去年");
         assert!(qu.is_some());
 
         let (qu_def, qu_count) = qu.unwrap();
         assert_eq!(qu_def.traditional_character, "去年");
         assert_eq!(*qu_count, 2);
 
-        let taiwan = def.get("台灣");
+        let taiwan = dictionnary.sentence_dictionnary.get("台灣");
         assert!(taiwan.is_some());
 
         let (taiwan_def, taiwan_count) = taiwan.unwrap();

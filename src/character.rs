@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use futures::future::join_all;
+use super::Char;
 
 // constant
 const PUNC_FULL_STOP: &str = ".";
@@ -48,14 +49,6 @@ impl Characters {
         self.unordered_list = list;    
     }
 
-    /// Retrieved a list of characters ordered by it's recurrence
-    pub fn get_ordered_characters(self) -> Vec<(char, i128)> {
-        let mut vec = Vec::from_iter(self.unordered_list.into_iter());
-        vec.sort_by(|(_, a), (_, b)| b.cmp(a));
-
-        vec
-    }
-
     /// Count character for a sentence
     /// 
     /// # Arguments
@@ -87,6 +80,15 @@ impl Characters {
             .replace(PUNC_QS_MARK, "")
             .replace(PUNC_EXC_MARK, "")
             .replace(PUNC_EMPTY, "")
+    }
+}
+
+impl Char<(char, i128)> for Characters {
+    fn get_ordered_characters(self) -> Vec<(char, i128)> {
+        let mut vec = Vec::from_iter(self.unordered_list.into_iter());
+        vec.sort_by(|(_, a), (_, b)| b.cmp(a));
+
+        vec
     }
 }
 
