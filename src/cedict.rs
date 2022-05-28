@@ -2,6 +2,10 @@ use std::collections::HashMap;
 use std::io::{BufReader, BufRead};
 use super::Char;
 
+// Constant
+const NB_SIGN_CHARACTER_CEDICT: char = '#';
+const PERCENT_CHARACTER_CEDICT: char = '%';
+
 #[derive(Debug, Default, Clone)]
 pub struct Cedict {
     traditional_character: String,
@@ -10,11 +14,13 @@ pub struct Cedict {
     english: String
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct Dictionnary {
     dic: HashMap<String, Cedict>,
-    sentence_dictionnary: HashMap<String, (Cedict, i64)>
 }
+
+// Custom type to handle the sentences list
+type SentencesDictionnary = HashMap<String, (Cedict, i64)>;
 
 impl Dictionnary {
     /// Create a new Dictionnary from the cedict_ts.u8
@@ -29,24 +35,24 @@ impl Dictionnary {
             }
 
             let line = line.unwrap();
-            if line.starts_with("#") || line.starts_with("%") {
+            if line.starts_with(NB_SIGN_CHARACTER_CEDICT) || line.starts_with(PERCENT_CHARACTER_CEDICT) {
                 continue;
             }
 
             let mut item = Cedict::default();
             let mut reminder = "";
 
-            if let Some((tw_character, rest)) = line.split_once(" ") {
+            if let Some((tw_character, rest)) = line.split_once(' ') {
                 item.traditional_character = tw_character.to_owned();
                 reminder = rest;
             }
 
-            if let Some((sf_character, rest)) = reminder.split_once(" ") {
+            if let Some((sf_character, rest)) = reminder.split_once(' ') {
                 item.simplify_character = sf_character.to_owned();
                 reminder = rest;
             }
 
-            if let Some((pinyin, rest)) = reminder.split_once("]") {
+            if let Some((pinyin, rest)) = reminder.split_once(']') {
                 item.pinyin = pinyin.to_owned();
                 item.english = rest.to_owned();
             }
@@ -54,15 +60,15 @@ impl Dictionnary {
             dic.insert(item.traditional_character.to_owned(), item);
         }
 
-        Dictionnary { dic, sentence_dictionnary: HashMap::new() }
+        Dictionnary { dic }
     }
 
-    /// Get a dictionnary based on the loaded cedict dictionnary from a given sentence
+    /// Get a list of definitions based on the loaded cedict dictionnary from a given sentence
     /// 
     /// # Arguments
     /// 
     /// * `sentence` - A string slice which represent a sentence
-    fn get_dictionnary_for_sentence(&mut self, sentence: &str) {
+    pub fn get_definitions_for_sentence(&self, sentence: &str) -> SentencesDictionnary {
         let mut start_cursor = 0;
         let mut end_cursor = 1;
         let mut done = false;
@@ -71,6 +77,7 @@ impl Dictionnary {
         let mut unmatched = 0;
         let mut dictionnary = HashMap::new();
 
+        // split the sentence into a vector of characters
         let characters: Vec<char> = sentence.chars().collect();
 
         let mut def: Cedict = Cedict::default();
@@ -123,14 +130,20 @@ impl Dictionnary {
 
         }
 
-        self.sentence_dictionnary = dictionnary
+        dictionnary
     }
 }
 
-impl Char<(String, (Cedict, i64))> for Dictionnary {
-    fn get_ordered_characters(self) -> Vec<(String, (Cedict, i64))> {
-        let mut vec = Vec::from_iter(self.sentence_dictionnary.into_iter());
-        vec.sort_by(|(_, (_, a)), (_, (_, b))| b.cmp(a));
+// Note that we're not implementing the trait for the Dictionnary
+// this is to avoid having conflict when working with the struct when
+// multiple worker can use it
+impl Char<(Cedict, i64)> for SentencesDictionnary {
+    fn get_ordered_characters(&self) -> Vec<(Cedict, i64)> {
+        let mut vec = self.values()
+            .cloned()
+            .collect::<Vec<(Cedict, i64)>>();
+
+        vec.sort_by(|(_, a), (_, b)| b.cmp(a));
 
         vec
     }
@@ -144,7 +157,7 @@ impl Char<(String, (Cedict, i64))> for Dictionnary {
 /// * `item` - A Cedict item which we'll be insert
 fn insert_map_word(map: &mut HashMap<String, (Cedict, i64)>, item: Cedict) {
     if let Some((_, v)) = map.get_mut(&item.traditional_character) {
-        *v = *v + 1;
+        *v += 1;
     } else {
         map.insert(item.traditional_character.to_string(), (item, 1));
     }
@@ -166,10 +179,10 @@ mod tests {
 
     #[test]
     fn expect_to_get_dictionnary_for_sentence() {
-        let mut dictionnary = Dictionnary::new();
-        dictionnary.get_dictionnary_for_sentence("去年今夜");
+        let dictionnary = Dictionnary::new();
+        let res = dictionnary.get_definitions_for_sentence("去年今夜");
         
-        let qu = dictionnary.sentence_dictionnary.get("去年");
+        let qu = res.get("去年");
         assert!(qu.is_some());
 
         let (qu_def, qu_count) = qu.unwrap();
@@ -179,21 +192,33 @@ mod tests {
 
     #[test]
     fn expect_to_get_dictionnary_for_complicated_sentence() {
-        let mut dictionnary = Dictionnary::new();
-        dictionnary.get_dictionnary_for_sentence("去年今夜中國人同醉月明花樹下lol台灣去年");
+        let dictionnary = Dictionnary::new();
+        let res = dictionnary.get_definitions_for_sentence("去年今夜中國人同醉月明花樹下lol台灣去年");
         
-        let qu = dictionnary.sentence_dictionnary.get("去年");
+        let qu = res.get("去年");
         assert!(qu.is_some());
 
         let (qu_def, qu_count) = qu.unwrap();
         assert_eq!(qu_def.traditional_character, "去年");
         assert_eq!(*qu_count, 2);
 
-        let taiwan = dictionnary.sentence_dictionnary.get("台灣");
+        let taiwan = res.get("台灣");
         assert!(taiwan.is_some());
 
         let (taiwan_def, taiwan_count) = taiwan.unwrap();
         assert_eq!(taiwan_def.traditional_character, "台灣");
         assert_eq!(*taiwan_count, 1);
+    }
+
+    #[test]
+    fn expect_to_get_ordered_list_of_definition() {
+        let dictionnary = Dictionnary::new();
+        let content = "今天天氣好熱. 我今天要吃冰糕";
+        let definitions = dictionnary.get_definitions_for_sentence(content);
+        let ordered_definition = definitions.get_ordered_characters();
+
+        let (today_def, count) = ordered_definition.first().unwrap();
+        assert_eq!(today_def.traditional_character, "今天");
+        assert_eq!(*count, 2);
     }
 }

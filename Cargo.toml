@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.18.2", features = ["full"] }
 futures = "0.3.21"
+
+[features]
+chinese = []
