@@ -1,9 +1,6 @@
 use std::collections::BTreeMap;
 use futures::future::join_all;
-use super::Char;
-
-// constant
-const CHINESE_PUNCTUATION: [&str; 10] = [".", "?", "!", ",", "...", "《", "》", "。", "\n", ";"];
+use super::{Char, Clean};
 
 pub struct Characters {
     content: String,
@@ -67,21 +64,9 @@ impl Characters {
     
         m
     }
-
-    /// Remove punctuation from a sentence to avoid being count
-    /// 
-    /// # Arguments
-    /// 
-    /// * `sentence` - A slice of string which represent a sentence
-    fn remove_punctuation_from_sentence(&self, sentence: &str) -> String {
-        let mut filtered_sentence = sentence.to_string();
-        for pattern in CHINESE_PUNCTUATION {
-            filtered_sentence = filtered_sentence.replace(pattern, "");
-        }
-
-        filtered_sentence
-    }
 }
+
+impl Clean for Characters {}
 
 impl Char<(char, i64)> for CharactersList {
     fn get_ordered_characters(&self) -> Vec<(char, i64)> {

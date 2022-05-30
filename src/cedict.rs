@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::io::{BufReader, BufRead};
-use super::Char;
+use super::{Char, Clean};
 
 // Constant
 const NB_SIGN_CHARACTER_CEDICT: char = '#';
@@ -21,6 +21,23 @@ pub struct Dictionnary {
 
 // Custom type to handle the sentences list
 type SentencesDictionnary = HashMap<String, (Cedict, i64)>;
+
+impl Cedict {
+    /// Get a vector of english translation from the string representation
+    fn get_english_translations(&self) -> Vec<String> {
+        self.english
+            .split("/")
+            .into_iter()
+            .filter_map(|s| {
+                if s.is_empty() {
+                    return None;
+                }
+
+                Some(s.trim().to_string())
+            })
+            .collect::<Vec<String>>()
+    }
+}
 
 impl Dictionnary {
     /// Create a new Dictionnary from the cedict_ts.u8
@@ -53,8 +70,8 @@ impl Dictionnary {
             }
 
             if let Some((pinyin, rest)) = reminder.split_once(']') {
-                item.pinyin = pinyin.to_owned();
-                item.english = rest.to_owned();
+                item.pinyin = pinyin.to_owned().replace('[', "");
+                item.english = rest.trim().to_string();
             }
 
             dic.insert(item.traditional_character.to_owned(), item);
@@ -78,7 +95,8 @@ impl Dictionnary {
         let mut dictionnary = HashMap::new();
 
         // split the sentence into a vector of characters
-        let characters: Vec<char> = sentence.chars().collect();
+        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence);
+        let characters: Vec<char> = cleaned_sentence.chars().collect();
 
         let mut def: Cedict = Cedict::default();
         while !done {
@@ -149,6 +167,8 @@ impl Char<(Cedict, i64)> for SentencesDictionnary {
     }
 }
 
+impl Clean for Dictionnary {}
+
 /// Insert a definition in a map
 /// 
 /// # Arguments
@@ -181,13 +201,17 @@ mod tests {
     fn expect_to_get_dictionnary_for_sentence() {
         let dictionnary = Dictionnary::new();
         let res = dictionnary.get_definitions_for_sentence("去年今夜");
-        
+
         let qu = res.get("去年");
         assert!(qu.is_some());
 
         let (qu_def, qu_count) = qu.unwrap();
         assert_eq!(qu_def.traditional_character, "去年");
         assert_eq!(*qu_count, 1);
+
+        let english_translation = qu_def.get_english_translations();
+        let english_translation = english_translation.get(0).unwrap();
+        assert_eq!(english_translation, "last year");
     }
 
     #[test]
@@ -213,7 +237,7 @@ mod tests {
     #[test]
     fn expect_to_get_ordered_list_of_definition() {
         let dictionnary = Dictionnary::new();
-        let content = "今天天氣好熱. 我今天要吃冰糕";
+        let content = "今天天氣好熱.我今天要吃冰糕";
         let definitions = dictionnary.get_definitions_for_sentence(content);
         let ordered_definition = definitions.get_ordered_characters();
 
