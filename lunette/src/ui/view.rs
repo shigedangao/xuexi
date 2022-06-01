@@ -1,4 +1,4 @@
-use iced::{Column, Row, PickList, Sandbox, Element, Container};
+use iced::{Row, PickList, Sandbox, Element, Container, Button, Text};
 use super::{Language, App, Message};
 
 // Constant
@@ -19,7 +19,13 @@ impl Sandbox for App {
     }
 
     fn update(&mut self, message: Self::Message) {
-        
+        match message {
+            Message::LanguageSelected(language) => {
+                self.selected_language = Some(language);
+            },
+            Message::GenerateBtnPressed => println!("generate pressed"),
+            Message::ExportBtnPressed => println!("export pressed")
+        }
     }
 
     fn view(&mut self) -> Element<Self::Message> {
@@ -32,6 +38,16 @@ impl Sandbox for App {
                     Message::LanguageSelected
                 )
                 .placeholder(SELECT_PLACEHOLDER)
+            )
+            // push a generate button
+            .push(
+                Button::new(&mut self.generate_btn_pressed, Text::new("Generate"))
+                    .on_press(Message::GenerateBtnPressed)
+            )
+            // push an export button
+            .push(
+                Button::new(&mut self.export_btn_pressed, Text::new("Export"))
+                    .on_press(Message::ExportBtnPressed)
             );
 
         Container::new(row).into()

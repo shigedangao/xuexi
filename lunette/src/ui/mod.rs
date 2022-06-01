@@ -1,9 +1,9 @@
-use iced::pick_list;
+use iced::{button, pick_list};
 
 mod view;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum Language {
+pub enum Language {
     TraditionalChinese
 }
 
@@ -15,9 +15,11 @@ impl std::fmt::Display for Language {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Message {
-    LanguageSelected(Language)
+    LanguageSelected(Language),
+    GenerateBtnPressed,
+    ExportBtnPressed
 }
 
 #[derive(Default)]
@@ -25,5 +27,8 @@ pub struct App {
     input_text: String,
     // select element
     select: pick_list::State<Language>,
-    selected_language: Option<Language>
+    selected_language: Option<Language>,
+    // button
+    generate_btn_pressed: button::State,
+    export_btn_pressed: button::State
 }
