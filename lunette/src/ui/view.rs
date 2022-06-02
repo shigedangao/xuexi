@@ -1,4 +1,4 @@
-use iced::{Row, PickList, Sandbox, Element, Container, Button, Text};
+use iced::{Row, PickList, Sandbox, Element, Container, Button, Text, TextInput, Column};
 use super::{Language, App, Message};
 
 // Constant
@@ -23,8 +23,13 @@ impl Sandbox for App {
             Message::LanguageSelected(language) => {
                 self.selected_language = Some(language);
             },
-            Message::GenerateBtnPressed => println!("generate pressed"),
-            Message::ExportBtnPressed => println!("export pressed")
+            Message::GenerateBtnPressed => {
+                self.words.push("foo".to_owned());
+            },
+            Message::ExportBtnPressed => println!("export pressed"),
+            Message::OnInput(content) => {
+                self.input_text = content;
+            }
         }
     }
 
@@ -50,6 +55,29 @@ impl Sandbox for App {
                     .on_press(Message::ExportBtnPressed)
             );
 
-        Container::new(row).into()
+        let mut test_col = Column::new();
+        for item in self.words.iter() {
+            test_col = test_col.push(Text::new(item));
+        }
+
+        let content_row = Row::new()
+            .push(
+                TextInput::new(
+                    &mut self.text_input_widget,
+                    "This is a placeholder",
+                    &self.input_text,
+                    Message::OnInput
+                )
+            )
+            .push(
+                test_col
+            );
+
+        let col = Column::new()
+            .push(row)
+            .push(content_row);
+
+        Container::new(col)
+            .into()
     }
 }

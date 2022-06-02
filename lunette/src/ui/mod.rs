@@ -1,4 +1,4 @@
-use iced::{button, pick_list};
+use iced::{button, pick_list, text_input};
 
 mod view;
 
@@ -19,16 +19,20 @@ impl std::fmt::Display for Language {
 pub enum Message {
     LanguageSelected(Language),
     GenerateBtnPressed,
-    ExportBtnPressed
+    ExportBtnPressed,
+    OnInput(String)
 }
 
 #[derive(Default)]
 pub struct App {
     input_text: String,
+    words: Vec<String>,
     // select element
     select: pick_list::State<Language>,
     selected_language: Option<Language>,
     // button
     generate_btn_pressed: button::State,
-    export_btn_pressed: button::State
+    export_btn_pressed: button::State,
+    // text input state
+    text_input_widget: text_input::State,
 }
