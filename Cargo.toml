@@ -1,6 +1,5 @@
 [workspace]
 members = [
+    "fugu",
     "phasa",
-    "lunette"
 ]
-resolver = "2"

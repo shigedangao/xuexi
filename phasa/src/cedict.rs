@@ -6,6 +6,9 @@ use super::{Char, Clean};
 // Constant
 const NB_SIGN_CHARACTER_CEDICT: char = '#';
 const PERCENT_CHARACTER_CEDICT: char = '%';
+const EMPTY_SPACE_CHARACTER: char = ' ';
+const LEFT_BRACKET_CHARACTER: char = '[';
+const RIGHT_BRACKET_CHARACTER: char = ']';
 
 #[derive(Debug, Default, Clone)]
 pub struct Cedict {
@@ -18,10 +21,6 @@ pub struct Cedict {
 #[derive(Debug, Clone, Default)]
 pub struct Dictionnary {
     dic: HashMap<String, Cedict>,
-}
-
-pub struct DictionnaryLoader {
-    loaded: bool
 }
 
 // Custom type to handle the sentences list
@@ -60,18 +59,18 @@ impl Dictionnary {
             match self.verify_line(line) {
                 Some(content) => {
                     let mut reminder = "";
-                    if let Some((tw_character, rest)) = content.split_once(' ') {
+                    if let Some((tw_character, rest)) = content.split_once(EMPTY_SPACE_CHARACTER) {
                         item.traditional_character = tw_character.to_owned();
                         reminder = rest;
                     }
         
-                    if let Some((sf_character, rest)) = reminder.split_once(' ') {
+                    if let Some((sf_character, rest)) = reminder.split_once(EMPTY_SPACE_CHARACTER) {
                         item.simplify_character = sf_character.to_owned();
                         reminder = rest;
                     }
         
-                    if let Some((pinyin, rest)) = reminder.split_once(']') {
-                        item.pinyin = pinyin.to_owned().replace('[', "");
+                    if let Some((pinyin, rest)) = reminder.split_once(RIGHT_BRACKET_CHARACTER) {
+                        item.pinyin = pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "");
                         item.english = rest.trim().to_string();
                     }
                 },

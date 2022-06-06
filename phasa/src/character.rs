@@ -2,6 +2,9 @@ use std::collections::BTreeMap;
 use futures::future::join_all;
 use super::{Char, Clean};
 
+// constant
+const EMPTY_SPACE_CHARACTER: char = ' ';
+
 pub struct Characters {
     content: String,
 }
@@ -22,7 +25,7 @@ impl Characters {
     /// Generate a list of character which contain it's number of recurrency
     pub async fn generate_characters_list(&self) -> CharactersList {
         // split a content by a space to avoid working with a very long content
-        let splitted = self.content.split(' ');
+        let splitted = self.content.split(EMPTY_SPACE_CHARACTER);
         // create a list of async method which we'll join
         let workers: Vec<_> = splitted
             .into_iter()
