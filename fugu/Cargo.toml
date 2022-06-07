@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 dioxus = { version = "0.2.4", features = ["desktop", "fermi"] }
 tokio = { version = "1.18.2", features = ["full"] }
+phasa = { path = "../phasa", features = ["chinese"] }

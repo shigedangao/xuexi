@@ -1,10 +1,7 @@
 use dioxus::core::Scope;
 use dioxus::prelude::*;
 use crate::theme::Colors;
-use super::navbar;
-
-// State for the layout
-pub static SELECTED_LANGUAGE: Atom<String> = |_| "chinese".to_string();
+use super::{navbar, editor};
 
 #[derive(Props, PartialEq)]
 pub struct LayoutProps {}
@@ -20,8 +17,8 @@ pub fn layout(cx: Scope) -> Element {
         div {
             class: format_args!("{}", colors.class_name),
             style { [include_str!("../assets/style.css")] }
-            "Hello",
-            navbar::navbar {}
+            navbar::navbar {},
+            editor::editor {}
         }
     })
 }

@@ -1,19 +1,17 @@
 use dioxus::{prelude::*, events::MouseEvent};
 
-#[derive(Props, PartialEq)]
-pub struct ButtonProps {
-    text: String,
-    color: String,
-    background_color: String,
-    on_click: fn(MouseEvent)
+#[derive(Props)]
+pub struct ButtonProps<'a> {
+    class_name: &'a str,
+    text: &'a str,
+    on_click: EventHandler<'a, MouseEvent>
 }
 
-pub fn button(cx: Scope<ButtonProps>) -> Element {
+pub fn button<'a>(cx: Scope<'a, ButtonProps<'a>>) -> Element {
     cx.render(rsx!{
         button {
-            background_color: format_args!("{}", cx.props.background_color),
-            color: format_args!("{}", cx.props.color),
-            onclick: cx.props.on_click,
+            class: format_args!("{}", cx.props.class_name),
+            onclick: move |evt| cx.props.on_click.call(evt),
             "{cx.props.text}",
         }
     })

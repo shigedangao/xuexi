@@ -1,6 +1,7 @@
 mod character;
+mod common;
 #[cfg(feature = "chinese")]
-mod cedict;
+pub mod cedict;
 
 use character::{Characters, CharactersList};
 #[cfg(feature = "chinese")]
@@ -35,18 +36,14 @@ trait Clean {
 /// # Arguments
 /// 
 /// * `&str` - A string content
-pub async fn get_character_by_usage(content: &str) -> CharactersList {
+pub fn get_character_by_usage(content: &str) -> CharactersList {
     let handler = Characters::new(content);
     
-    handler.generate_characters_list().await
+    handler.generate_characters_list()
 }
 
 /// Load a chinese dictionnary which allows you to get a list of chinese definitions
 #[cfg(feature = "chinese")]
-pub async fn load_chinese_dictionnary() -> Result<Dictionnary, tokio::task::JoinError> {
-    let res = tokio::spawn(async move {
-        Dictionnary::new()
-    }).await;
-
-    res
+pub fn load_chinese_dictionnary() -> Dictionnary {
+    Dictionnary::new()
 }
