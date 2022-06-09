@@ -21,5 +21,8 @@ pub fn get_character_by_usage(content: &str) -> CharactersList {
 /// Load a chinese dictionnary which allows you to get a list of chinese definitions
 #[cfg(feature = "chinese")]
 pub fn load_chinese_dictionnary() -> Dictionnary {
-    Dictionnary::new()
+    let mut dictionnary = Dictionnary::new();
+    dictionnary.load();
+
+    dictionnary
 }

@@ -68,14 +68,8 @@ impl Dictionnary {
     /// 
     /// * `sentence` - A string slice which represent a sentence
     pub fn get_list_detected_words(&self, sentence: &str) -> Option<SentencesDictionnary> {
-        if sentence.len() == 0 {
-            return None
-        }
-        
         let mut start_cursor = 0;
         let mut end_cursor = 1;
-        let mut done = false;
-        // flag used to count the number of character unmatched
         // this is to avoid a case where we can do an infinite loop on a single character
         let mut unmatched = 0;
         let mut dictionnary = HashMap::new();
@@ -85,22 +79,14 @@ impl Dictionnary {
 
         // temp definition
         let mut step_def: Option<Definition> = None;
-        while !done {
+        while let Some(char) = characters.get(start_cursor..end_cursor) {
             // create a word based on the start cursor and the end cursor
-            let new_word_char = match characters.get(start_cursor..end_cursor) {
-                Some(w) => w,
-                None => {
-                    return None;
-                }
-            };
-            
-            let word: String = new_word_char.to_vec().iter().collect();
+            let word: String = char.to_vec().iter().collect();
             match self.dic.get(&word) {
                 Some(res) => {
                     step_def = Some(res.clone());
                     if end_cursor == characters.len() {
                         self.insert_map_word(&mut dictionnary, &step_def);
-                        done = true;
                     }
 
                     end_cursor += 1;
@@ -215,7 +201,7 @@ mod tests {
     fn expect_to_load_dictionnary_en() {
         let mut dictionnary = super::Dictionnary::new();
         dictionnary.load();
-        let words = dictionnary.get_list_detected_words("You去");
+        let words = dictionnary.get_list_detected_words("You");
 
         println!("{:?}", words);
     }

@@ -19,9 +19,6 @@ pub fn generator(cx: Scope<GeneratorProps>) -> Element {
         SupportedLanguage::Chinese => cn_dictionnary.get_list_detected_words(sentence),
     };
 
-    println!("here");
-    println!("{:?}", sentence);
-
     if res.is_none() {
         return cx.render(rsx! {
             div {
@@ -35,8 +32,7 @@ pub fn generator(cx: Scope<GeneratorProps>) -> Element {
         .into_iter()
         .map(|(s, d)| {
             rsx!{
-                p { "{s}" }
-                p { "{d.prounciation}"}
+                p { "{s} {d.prounciation} {d.english}" "{d.count}" }
             }
         });
 
