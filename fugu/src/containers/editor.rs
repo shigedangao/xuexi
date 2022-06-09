@@ -1,5 +1,6 @@
 use dioxus::{prelude::*, events::FormEvent};
 use crate::{state::USER_TEXT_INPUT, components::textarea};
+use super::generator;
 
 #[derive(Props, PartialEq)]
 pub struct EditorProps {}
@@ -12,6 +13,7 @@ pub fn editor(cx: Scope<EditorProps>) -> Element {
             on_input: |e: FormEvent| {
                 set_text(e.value.clone());
             }
-        }
+        },
+        generator::generator {}
     })
 }

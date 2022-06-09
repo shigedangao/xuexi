@@ -7,16 +7,53 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'xuexi'",
+            "name": "Debug executable 'fugu'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=fugu",
+                    "--package=fugu"
+                ],
+                "filter": {
+                    "name": "fugu",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'fugu'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=fugu",
+                    "--package=fugu"
+                ],
+                "filter": {
+                    "name": "fugu",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'phasa'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
                     "--lib",
-                    "--package=xuexi"
+                    "--package=phasa"
                 ],
                 "filter": {
-                    "name": "xuexi",
+                    "name": "phasa",
                     "kind": "lib"
                 }
             },

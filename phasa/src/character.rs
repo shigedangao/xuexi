@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use super::{Char, Clean};
+use crate::common::{Ordered, Clean};
 
 // constant
 const EMPTY_SPACE_CHARACTER: char = ' ';
@@ -69,7 +69,7 @@ impl Characters {
 
 impl Clean for Characters {}
 
-impl Char<(char, i64)> for CharactersList {
+impl Ordered<(char, i64)> for CharactersList {
     fn get_ordered_characters(&self) -> Vec<(char, i64)> {
         let mut vec: Vec<_> = Vec::from_iter(self.clone().into_iter());
         vec.sort_by(|(_, a), (_, b)| b.cmp(a));

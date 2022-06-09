@@ -6,7 +6,7 @@ use crate::components::{
     button,
     dropdown
 };
-use crate::state::SELECTED_LANGUAGE;
+use crate::state::{SELECTED_LANGUAGE, SupportedLanguage};
 
 #[derive(Props, PartialEq)]
 pub struct NavbarProps {}
@@ -21,7 +21,7 @@ pub fn navbar(cx: Scope<NavbarProps>) -> Element {
             dropdown::dropdown {
                 list: vec!["chinese", "laotian"],
                 on_change: |e: FormEvent| {
-                    set_language(e.value.clone());
+                    set_language(SupportedLanguage::from(e.value.clone()));
                 },
             }
             p {
