@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300&display=swap');
+
+body {
+    padding: 0px;
+    margin: 0px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.dark {
+    background-color: #001E30;
+    color: white;
+    min-height: 100vh;
+}
+
+.navbar__container {
+    display: flex;
+    height: 50px;
+    align-items: center;
+}
+
+.btn__navbar {
+    height: 35px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+}
+
+.dark-btn-text {
+    background-color: #627FFA;
+}
