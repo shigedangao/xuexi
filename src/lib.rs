@@ -1,4 +1,5 @@
 mod character;
+pub mod error;
 pub mod definition;
 pub mod common;
 pub mod chinese;

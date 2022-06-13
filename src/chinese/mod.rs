@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::io::Error;
 use std::io::{BufReader, BufRead};
+use csv::Writer;
+use crate::error::LibError;
 use crate::definition::Definition;
 use crate::common::{Clean, Ordered};
 
@@ -172,6 +174,24 @@ impl Ordered<(String, Definition)> for SentencesDictionnary {
 
         vec
     }
+
+    fn export_to_csv(&self) -> Result<String, LibError> {
+        let ordered = self.get_ordered_characters();
+        // get the list of definition
+        let definitions: Vec<Definition> = ordered.into_iter()
+            .map(|(_, d)| d)
+            .collect();
+
+        let mut wrt = Writer::from_writer(vec![]);
+        wrt.serialize(definitions)?;
+
+        let inner = wrt.into_inner()
+            .map_err(|err| LibError::Serialize(err.to_string()))?;
+
+        let res = String::from_utf8(inner)?;
+
+        Ok(res)
+    }
 }
 
 #[cfg(test)]
@@ -182,27 +202,52 @@ mod tests {
     fn expect_to_load_dictionnary() {
         let mut dictionnary = super::Dictionnary::new();
         dictionnary.load();
-        let words = dictionnary.get_list_detected_words("氣不錯你喜歡喝酒嗎你跟我一起喝");
 
-        println!("{:?}", words);
-        assert!(!words.unwrap().is_empty());
+        assert!(!dictionnary.dic.is_empty());
     }
 
     #[test]
-    fn expect_to_not_load_dictionnary() {
+    fn expect_to_get_characters() {
         let mut dictionnary = super::Dictionnary::new();
         dictionnary.load();
-        let words = dictionnary.get_list_detected_words("你好你好");
 
-        println!("{:?}", words);
+        let words = dictionnary.get_list_detected_words("你好你好").unwrap();
+        let nihao = words.get("你好");
+
+        assert!(nihao.is_some());
+
+        let nihao = nihao.unwrap();
+        assert_eq!(nihao.count, 2);
+        assert_eq!(nihao.writing_method, "你好");
     }
 
     #[test]
-    fn expect_to_load_dictionnary_en() {
+    fn expect_to_get_ordered_characters() {
         let mut dictionnary = super::Dictionnary::new();
         dictionnary.load();
-        let words = dictionnary.get_list_detected_words("You");
 
-        println!("{:?}", words);
+        let words = dictionnary.get_list_detected_words("去年我去過日本看我好朋友日本很好看").unwrap();
+        let riben = words.get("日本").unwrap();
+        
+        assert_eq!(riben.count, 2);
+        assert_eq!(riben.writing_method, "日本");
+
+        let vec = words.get_ordered_characters();
+        let (f, item) = vec.first().unwrap();
+
+        assert_eq!(f, "日本");
+        assert_eq!(item.count, 2);
+        assert_eq!(item.writing_method, "日本");
+    }
+
+    #[test]
+    fn expect_to_generate_csv() {
+        let mut dictionnary = super::Dictionnary::new();
+        dictionnary.load();
+
+        let words = dictionnary.get_list_detected_words("我昨天感冒了").unwrap();
+        let res = words.export_to_csv();
+
+        assert!(res.is_ok());
     }
 }

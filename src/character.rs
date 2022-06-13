@@ -1,4 +1,7 @@
 use std::collections::BTreeMap;
+use csv::Writer;
+use serde::Serialize;
+use crate::error::LibError;
 use crate::common::{Ordered, Clean};
 
 // constant
@@ -6,6 +9,12 @@ const EMPTY_SPACE_CHARACTER: char = ' ';
 
 pub struct Characters {
     content: String,
+}
+
+#[derive(Debug, Serialize)]
+struct CharacterCount {
+    char: char,
+    count: i64
 }
 
 // Custom type to handle Map for character
@@ -75,6 +84,26 @@ impl Ordered<(char, i64)> for CharactersList {
         vec.sort_by(|(_, a), (_, b)| b.cmp(a));
 
         vec
+    }
+
+    fn export_to_csv(&self) -> Result<String, crate::error::LibError> {
+        let ordered = self.get_ordered_characters();
+        let items: Vec<CharacterCount> = ordered.into_iter()
+            .map(|(char, count)| CharacterCount {
+                char,
+                count
+            })
+            .collect();
+
+        let mut wrt = Writer::from_writer(vec![]);
+        wrt.serialize(items)?;
+
+        let inner = wrt.into_inner()
+            .map_err(|err| LibError::Serialize(err.to_string()))?;
+
+        let res = String::from_utf8(inner)?;
+
+        Ok(res)
     }
 }
 
