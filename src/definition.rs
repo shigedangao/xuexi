@@ -1,4 +1,6 @@
-#[derive(Debug, Default, Clone)]
+use serde::Serialize;
+
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct Definition {
     pub writing_method: String,
     pub writing_method_two: Option<String>,

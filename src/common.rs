@@ -1,9 +1,12 @@
+use crate::error::LibError;
+
 // Constant
 const PUNCTUATION: [&str; 10] = [".", "?", "!", ",", "...", "《", "》", "。", "\n", ";"];
 
 pub trait Ordered<T> {
     /// Retrieved a list of characters ordered by it's recurrence
     fn get_ordered_characters(&self) -> Vec<T>;
+    fn export_to_csv(&self) -> Result<String, LibError>; 
 }
 
 pub trait Clean {
