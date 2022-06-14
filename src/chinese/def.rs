@@ -3,7 +3,7 @@ use crate::definition::{CommonDefinitionLanguage, Definition};
 impl CommonDefinitionLanguage for Definition {
     /// Get a vector of english translation from the string representation
     fn get_english_translations(&self) -> Vec<String> {
-        self.english.split("/")
+        self.english.split('/')
             .into_iter()
             .filter_map(|s| {
                 if s.is_empty() {
