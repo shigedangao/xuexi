@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use csv::Writer;
 use serde::Serialize;
 use crate::error::LibError;
-use crate::common::{Ordered, Clean};
+use crate::common::{Ops, Clean};
 
 // constant
 const EMPTY_SPACE_CHARACTER: char = ' ';
@@ -78,7 +78,7 @@ impl Characters {
 
 impl Clean for Characters {}
 
-impl Ordered<(char, i64)> for CharactersList {
+impl Ops<(char, i64)> for CharactersList {
     fn get_ordered_characters(&self) -> Vec<(char, i64)> {
         let mut vec: Vec<_> = Vec::from_iter(self.clone().into_iter());
         vec.sort_by(|(_, a), (_, b)| b.cmp(a));

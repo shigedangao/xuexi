@@ -3,6 +3,7 @@ pub mod error;
 pub mod definition;
 pub mod common;
 pub mod chinese;
+pub mod laotian;
 
 use character::{Characters, CharactersList};
 #[cfg(feature = "chinese")]
