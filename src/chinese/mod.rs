@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 use std::io::Error;
 use std::io::{BufReader, BufRead};
-use csv::Writer;
-use crate::error::LibError;
 use crate::definition::Definition;
-use crate::common::{Clean, Ordered};
+use crate::common::{Clean, DetectWord};
 
 pub mod def;
 
@@ -19,9 +17,6 @@ const RIGHT_BRACKET_CHARACTER: char = ']';
 pub struct Dictionnary {
     dic: HashMap<String, Definition>,
 }
-
-// Custom type to handle the sentences list
-pub type SentencesDictionnary = HashMap<String, Definition>;
 
 impl Dictionnary {
     /// Create a new empty dictionnary
@@ -64,12 +59,32 @@ impl Dictionnary {
         self.dic = dic;
     }
 
-    /// Get a list of detected words based on the loaded cedict dictionnary from a given sentence
+    /// Check that the line does not contains any character that we want to avoid
     /// 
     /// # Arguments
-    /// 
-    /// * `sentence` - A string slice which represent a sentence
-    pub fn get_list_detected_words(&self, sentence: &str) -> Option<SentencesDictionnary> {
+    /// * `line` - Result<String, Error>
+    fn verify_line(&self, line: Result<String, Error>) -> Option<String> {
+        match line {
+            Ok(content) => {
+                if content.starts_with(NB_SIGN_CHARACTER_CEDICT) || content.starts_with(PERCENT_CHARACTER_CEDICT) {
+                    return None;
+                }
+
+                Some(content)
+            }
+            Err(_) => None,
+        }
+    }
+}
+
+impl Clean for Dictionnary {}
+
+impl DetectWord for Dictionnary {
+    fn get_dictionnary(&self) -> &HashMap<String, Definition> {
+        &self.dic
+    }
+
+    fn get_list_detected_words(&self, sentence: &str) -> Option<HashMap<String, Definition>> {
         let mut start_cursor = 0;
         let mut end_cursor = 1;
         // this is to avoid a case where we can do an infinite loop on a single character
@@ -84,7 +99,7 @@ impl Dictionnary {
         while let Some(char) = characters.get(start_cursor..end_cursor) {
             // create a word based on the start cursor and the end cursor
             let word: String = char.to_vec().iter().collect();
-            match self.dic.get(&word) {
+            match self.get_dictionnary().get(&word) {
                 Some(res) => {
                     step_def = Some(res.clone());
                     if end_cursor == characters.len() {
@@ -122,81 +137,18 @@ impl Dictionnary {
             }
         }
 
+        if dictionnary.is_empty() {
+            return None;
+        }
+
         Some(dictionnary)
-    }
-
-    /// Check that the line does not contains any character that we want to avoid
-    /// 
-    /// # Arguments
-    /// * `line` - Result<String, Error>
-    fn verify_line(&self, line: Result<String, Error>) -> Option<String> {
-        match line {
-            Ok(content) => {
-                if content.starts_with(NB_SIGN_CHARACTER_CEDICT) || content.starts_with(PERCENT_CHARACTER_CEDICT) {
-                    return None;
-                }
-
-                Some(content)
-            }
-            Err(_) => None,
-        }
-    }
-
-    /// Insert a definition in a map
-    /// 
-    /// # Arguments
-    /// 
-    /// * `map` - A mutable reference to a HashMap
-    /// * `item` - A Definition item which we'll be insert
-    fn insert_map_word(&self, map: &mut HashMap<String, Definition>, item: &Option<Definition>) {
-        if item.is_none() {
-            return;
-        }
-
-        let item = item.to_owned().unwrap();
-        if let Some(def) = map.get_mut(&item.writing_method) {
-            def.count += 1;
-        } else {
-            let mut item_clone = item.clone();
-            item_clone.count = 1;
-            map.insert(item.writing_method.clone(), item_clone);
-        }
-    }
-
-}
-
-impl Clean for Dictionnary {}
-
-impl Ordered<(String, Definition)> for SentencesDictionnary {
-    fn get_ordered_characters(&self) -> Vec<(String, Definition)> {
-        let mut vec: Vec<_> = Vec::from_iter(self.clone().into_iter());
-        vec.sort_by(|(_, a), (_, b)| b.count.cmp(&a.count));
-
-        vec
-    }
-
-    fn export_to_csv(&self) -> Result<String, LibError> {
-        let ordered = self.get_ordered_characters();
-        // get the list of definition
-        let definitions: Vec<Definition> = ordered.into_iter()
-            .map(|(_, d)| d)
-            .collect();
-
-        let mut wrt = Writer::from_writer(vec![]);
-        wrt.serialize(definitions)?;
-
-        let inner = wrt.into_inner()
-            .map_err(|err| LibError::Serialize(err.to_string()))?;
-
-        let res = String::from_utf8(inner)?;
-
-        Ok(res)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::Ops;
 
     #[test]
     fn expect_to_load_dictionnary() {
@@ -241,6 +193,26 @@ mod tests {
     }
 
     #[test]
+    fn expect_to_generate_list_with_for_multiple_sentences() {
+        let mut dictionnary = super::Dictionnary::new();
+        dictionnary.load();
+
+        let words = dictionnary.get_list_detected_words("今天我日本朋友吃拉麵. 日本拉麵看起來好吃! 吃拉麵讓我高興").unwrap();
+        
+        let riben = words.get("日本").unwrap();
+        assert_eq!(riben.count, 2);
+        assert_eq!(riben.writing_method, "日本");
+
+        let chi = words.get("吃").unwrap();
+        assert_eq!(chi.count, 2);
+        assert_eq!(chi.writing_method, "吃");
+
+        let gaoxing = words.get("高興").unwrap();
+        assert_eq!(gaoxing.count, 1);
+        assert_eq!(gaoxing.writing_method, "高興");
+    }
+
+    #[test]
     fn expect_to_generate_csv() {
         let mut dictionnary = super::Dictionnary::new();
         dictionnary.load();
@@ -249,5 +221,14 @@ mod tests {
         let res = words.export_to_csv();
 
         assert!(res.is_ok());
+    }
+
+    #[test]
+    fn expect_to_return_none_when_no_chinese_word() {
+        let mut dictionnary = super::Dictionnary::new();
+        dictionnary.load();
+
+        let words = dictionnary.get_list_detected_words("hello");
+        assert!(words.is_none());
     }
 }

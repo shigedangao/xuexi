@@ -1,8 +1,8 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use csv::Writer;
 use serde::Serialize;
 use crate::error::LibError;
-use crate::common::{Ordered, Clean};
+use crate::common::{Ops, Clean};
 
 // constant
 const EMPTY_SPACE_CHARACTER: char = ' ';
@@ -18,7 +18,7 @@ struct CharacterCount {
 }
 
 // Custom type to handle Map for character
-pub type CharactersList = BTreeMap<char, i64>;
+pub type CharactersList = HashMap<char, i64>;
 
 impl Characters {
     /// Create a new Characters struct with the content that needs to be parsed
@@ -41,7 +41,7 @@ impl Characters {
             .map(|s| self.count_char_for_sentence(s))
             .collect();
     
-        let mut list = BTreeMap::new();
+        let mut list = HashMap::new();
         for map in outputs {
             for (k, v) in map.into_iter() {
                 if let Some(lv) = list.get_mut(&k) {
@@ -60,8 +60,8 @@ impl Characters {
     /// # Arguments
     /// 
     /// * `sentence` - A slice of string which represent a sentence
-    fn count_char_for_sentence(&self, sentence: String) -> BTreeMap<char, i64> {
-        let mut m: BTreeMap<char, i64> = BTreeMap::new();
+    fn count_char_for_sentence(&self, sentence: String) -> HashMap<char, i64> {
+        let mut m: HashMap<char, i64> = HashMap::new();
         let chars = sentence.chars();
     
         for char in chars {
@@ -78,7 +78,7 @@ impl Characters {
 
 impl Clean for Characters {}
 
-impl Ordered<(char, i64)> for CharactersList {
+impl Ops<(char, i64)> for CharactersList {
     fn get_ordered_characters(&self) -> Vec<(char, i64)> {
         let mut vec: Vec<_> = Vec::from_iter(self.clone().into_iter());
         vec.sort_by(|(_, a), (_, b)| b.cmp(a));
@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn expect_to_return_ordered_character_by_presence() {
-        let content = "我跟你一起吃飯你要吃什麼";
+        let content = "我跟你一起吃飯. 你要喝什麼";
         let handler = Characters::new(content);
         let res = handler.generate_characters_list();
 
@@ -151,5 +151,15 @@ mod tests {
         let (character, count) = most_present.unwrap();
         assert_eq!(*character, '你');
         assert_eq!(*count, 2);
+    }
+
+    #[test]
+    fn expect_to_export_to_csv() {
+        let content = "今天天氣非常熱";
+        let handler = Characters::new(content);
+        let res = handler.generate_characters_list();
+
+        let csv = res.export_to_csv();
+        assert!(csv.is_ok());
     }
 }

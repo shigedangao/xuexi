@@ -11,3 +11,5 @@ jobs:
         run: rustup component add clippy
       - name: run tests
         run: cargo test
+      - name: clippy
+        run: cargo clippy
