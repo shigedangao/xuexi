@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn expect_to_return_ordered_character_by_presence() {
-        let content = "我跟你一起吃飯你要吃什麼";
+        let content = "我跟你一起吃飯. 你要喝什麼";
         let handler = Characters::new(content);
         let res = handler.generate_characters_list();
 
