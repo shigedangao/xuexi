@@ -137,6 +137,10 @@ impl DetectWord for Dictionnary {
             }
         }
 
+        if dictionnary.is_empty() {
+            return None;
+        }
+
         Some(dictionnary)
     }
 }
@@ -197,5 +201,14 @@ mod tests {
         let res = words.export_to_csv();
 
         assert!(res.is_ok());
+    }
+
+    #[test]
+    fn expect_to_return_none_when_no_chinese_word() {
+        let mut dictionnary = super::Dictionnary::new();
+        dictionnary.load();
+
+        let words = dictionnary.get_list_detected_words("hello");
+        assert!(words.is_none());
     }
 }

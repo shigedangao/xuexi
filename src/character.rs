@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use csv::Writer;
 use serde::Serialize;
 use crate::error::LibError;
@@ -18,7 +18,7 @@ struct CharacterCount {
 }
 
 // Custom type to handle Map for character
-pub type CharactersList = BTreeMap<char, i64>;
+pub type CharactersList = HashMap<char, i64>;
 
 impl Characters {
     /// Create a new Characters struct with the content that needs to be parsed
@@ -41,7 +41,7 @@ impl Characters {
             .map(|s| self.count_char_for_sentence(s))
             .collect();
     
-        let mut list = BTreeMap::new();
+        let mut list = HashMap::new();
         for map in outputs {
             for (k, v) in map.into_iter() {
                 if let Some(lv) = list.get_mut(&k) {
@@ -60,8 +60,8 @@ impl Characters {
     /// # Arguments
     /// 
     /// * `sentence` - A slice of string which represent a sentence
-    fn count_char_for_sentence(&self, sentence: String) -> BTreeMap<char, i64> {
-        let mut m: BTreeMap<char, i64> = BTreeMap::new();
+    fn count_char_for_sentence(&self, sentence: String) -> HashMap<char, i64> {
+        let mut m: HashMap<char, i64> = HashMap::new();
         let chars = sentence.chars();
     
         for char in chars {
@@ -151,5 +151,15 @@ mod tests {
         let (character, count) = most_present.unwrap();
         assert_eq!(*character, '你');
         assert_eq!(*count, 2);
+    }
+
+    #[test]
+    fn expect_to_export_to_csv() {
+        let content = "今天天氣非常熱";
+        let handler = Characters::new(content);
+        let res = handler.generate_characters_list();
+
+        let csv = res.export_to_csv();
+        assert!(csv.is_ok());
     }
 }

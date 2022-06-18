@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use serde::Deserialize;
 use chamkho::Wordcut;
-use crate::definition::{Definition, DefinitionList};
-use crate::common::{Clean, DetectWord, Ops};
+use crate::definition::Definition;
+use crate::common::{Clean, DetectWord};
 use crate::error::LibError;
 
 pub struct Dictionnary {
@@ -78,10 +78,18 @@ impl DetectWord for Dictionnary {
         let cleaned_sentence = self.remove_punctuation_from_sentence(sentence);
         // get a list of laotian word from the sentence
         let words = self.parser.segment_into_strings(&cleaned_sentence);
+        if words.is_empty() {
+            return None;
+        }
+
         for word in words {
             if let Some(item) = self.dic.get(&word) {
                 self.insert_map_word(&mut matched, &Some(item.to_owned()));
             }
+        }
+
+        if matched.is_empty() {
+            return None;
         }
         
         Some(matched)
@@ -91,6 +99,7 @@ impl DetectWord for Dictionnary {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::Ops;
 
     #[test]
     fn expect_to_load_lao_dictionnary() {
@@ -120,6 +129,39 @@ mod tests {
         dictionnary.load();
 
         let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ");
-        println!("{words:?}");
+        assert!(words.is_some());
+        
+        let words = words.unwrap();
+        let baby = words.get("ລູກ");
+        assert!(baby.is_some());
+
+        let baby = baby.unwrap();
+        assert_eq!(baby.writing_method, "ລູກ");
+        assert_eq!(baby.prounciation, "luuk");
+        assert_eq!(baby.english, "baby");
+    }
+
+    #[test]
+    fn expect_to_get_list_of_word_by_order() {
+        let mut dictionnary = Dictionnary::new().unwrap();
+        dictionnary.load();
+
+        let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງລູກຢາກກິນເຂົ້າຫນຽວ");
+        assert!(words.is_some());
+
+        let ordered_words = words.unwrap().get_ordered_characters();
+        let (word, item) = ordered_words.get(0).unwrap();
+        
+        assert_eq!(item.count, 2);
+        assert_eq!(word, "ລູກ");
+    }
+
+    #[test]
+    fn expect_to_not_match_anything() {
+        let mut dictionnary = Dictionnary::new().unwrap();
+        dictionnary.load();
+
+        let words = dictionnary.get_list_detected_words("hello");
+        assert!(words.is_none());        
     }
 }
