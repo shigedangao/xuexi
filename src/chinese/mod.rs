@@ -193,6 +193,26 @@ mod tests {
     }
 
     #[test]
+    fn expect_to_generate_list_with_for_multiple_sentences() {
+        let mut dictionnary = super::Dictionnary::new();
+        dictionnary.load();
+
+        let words = dictionnary.get_list_detected_words("今天我日本朋友吃拉麵. 日本拉麵看起來好吃! 吃拉麵讓我高興").unwrap();
+        
+        let riben = words.get("日本").unwrap();
+        assert_eq!(riben.count, 2);
+        assert_eq!(riben.writing_method, "日本");
+
+        let chi = words.get("吃").unwrap();
+        assert_eq!(chi.count, 2);
+        assert_eq!(chi.writing_method, "吃");
+
+        let gaoxing = words.get("高興").unwrap();
+        assert_eq!(gaoxing.count, 1);
+        assert_eq!(gaoxing.writing_method, "高興");
+    }
+
+    #[test]
     fn expect_to_generate_csv() {
         let mut dictionnary = super::Dictionnary::new();
         dictionnary.load();
