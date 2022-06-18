@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use crate::{error::LibError, definition::Definition};
 
 // Constant

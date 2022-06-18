@@ -13,3 +13,7 @@ chamkho = "1.1.0"
 [features]
 chinese = []
 laotian = []
+
+[[example]]
+name = "example"
+required-features = ["chinese", "laotian"]
