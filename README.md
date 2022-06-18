@@ -9,6 +9,14 @@ All of these dictionaries are available on the internet. Big thanks to them for 
 - Chinese by using the [cedict dictionnary](https://www.mdbg.net/chinese/dictionary?page=cedict)
 - Laotian by using the [Japanese laotian dictionnary made by srachai](http://srachai.web.fc2.com)
 
+## Example
+
+An example can be found in the `examples` folder. The example can be run with the command
+
+```sh
+cargo run --example example --features="chinese, laotian"
+```
+
 ## Usage
 
 The library is feature gates. Below are example for the supported languages
