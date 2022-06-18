@@ -31,6 +31,7 @@ pub fn load_chinese_dictionnary() -> CNDictionnary {
     dictionnary
 }
 
+/// Load a laotian dictionnary which allows you to get a list of laotian word definitions
 #[cfg(feature = "laotian")]
 pub fn load_laotian_dictionnary() -> Result<LaoDictionnary, error::LibError> {
     let mut dictionnary = LaoDictionnary::new()?;

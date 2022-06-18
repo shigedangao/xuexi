@@ -22,6 +22,8 @@ pub struct JPEnLaoItem {
 }
 
 impl Dictionnary {
+    /// Create a new dictionnary and load the chamkho parser which
+    /// is used to found the word in a laotian sentence
     pub fn new() -> Result<Self, LibError> {
         // preload the wordcut dictionnary 
         let lao_dic_path = chamkho::lao_path();
@@ -36,6 +38,15 @@ impl Dictionnary {
         })
     }
 
+    /// Load the laotian dictionnary. The chamkho library does not provide a set of definitions for words
+    /// Hence we're using a different asset for getting the definition of each word. So far we're using
+    /// this definition available here
+    /// 
+    /// @link http://srachai.web.fc2.com
+    /// 
+    /// # Arguments
+    /// 
+    /// * `&mut self` - Self
     pub fn load(&mut self) {
         let mut dic = HashMap::new();
         let resource: &[u8] = include_bytes!("../../jp-lao-en.csv");

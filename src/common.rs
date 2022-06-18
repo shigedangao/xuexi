@@ -7,6 +7,9 @@ const PUNCTUATION: [&str; 10] = [".", "?", "!", ",", "...", "《", "》", "。",
 pub trait Ops<T> {
     /// Retrieved a list of characters ordered by it's recurrence
     fn get_ordered_characters(&self) -> Vec<T>;
+    /// Export a a type to CSV
+    ///     - Definitions: In this case this will return a csv of definitions
+    ///     - Character count: This is gonna return the character and the count amount 
     fn export_to_csv(&self) -> Result<String, LibError>; 
 }
 
