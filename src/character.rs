@@ -7,8 +7,8 @@ use crate::common::{Ops, Clean};
 // constant
 const EMPTY_SPACE_CHARACTER: char = ' ';
 
-pub struct Characters {
-    content: String,
+pub struct Characters<'a> {
+    content: &'a str,
 }
 
 #[derive(Debug, Serialize)]
@@ -20,14 +20,14 @@ struct CharacterCount {
 // Custom type to handle Map for character
 pub type CharactersList = HashMap<char, i64>;
 
-impl Characters {
+impl<'a> Characters<'a> {
     /// Create a new Characters struct with the content that needs to be parsed
     /// 
     /// # Arguments
     /// 
     /// * `content` - A slice of content (text, sentences)
-    pub fn new(content: &str) -> Self {
-        Characters { content: content.to_owned() }
+    pub fn new(content: &'a str) -> Self {
+        Characters { content }
     }
 
     /// Generate a list of character which contain it's number of recurrency
@@ -38,7 +38,7 @@ impl Characters {
         let outputs: Vec<_> = splitted
             .into_iter()
             .map(|s| self.remove_punctuation_from_sentence(s))
-            .map(|s| self.count_char_for_sentence(s))
+            .map(|s| self.count_char_for_sentence(&s))
             .collect();
     
         let mut list = HashMap::new();
@@ -60,7 +60,7 @@ impl Characters {
     /// # Arguments
     /// 
     /// * `sentence` - A slice of string which represent a sentence
-    fn count_char_for_sentence(&self, sentence: String) -> HashMap<char, i64> {
+    fn count_char_for_sentence(&self, sentence: &str) -> HashMap<char, i64> {
         let mut m: HashMap<char, i64> = HashMap::new();
         let chars = sentence.chars();
     
@@ -76,7 +76,7 @@ impl Characters {
     }
 }
 
-impl Clean for Characters {}
+impl Clean for Characters<'_> {}
 
 impl Ops<(char, i64)> for CharactersList {
     fn get_ordered_characters(&self) -> Vec<(char, i64)> {
