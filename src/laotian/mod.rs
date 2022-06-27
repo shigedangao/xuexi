@@ -88,12 +88,9 @@ impl DetectWord for Dictionnary {
         let mut matched = HashMap::new();
         // clean the string first 
         let cleaned_sentence = self.remove_punctuation_from_sentence(sentence);
-        // get a list of laotian word from the sentence
-        if self.parser.is_none() {
-            return None;
-        }
         
-        let parser = self.parser.as_ref().unwrap();
+        // get a list of laotian word from the sentence
+        let parser = self.parser.as_ref()?;
         let words = parser.segment_into_strings(&cleaned_sentence);
         if words.is_empty() {
             return None;
