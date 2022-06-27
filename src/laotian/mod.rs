@@ -5,9 +5,10 @@ use crate::definition::Definition;
 use crate::common::{Clean, DetectWord};
 use crate::error::LibError;
 
+#[derive(Default)]
 pub struct Dictionnary {
     dic: HashMap<String, Definition>,
-    parser: Wordcut,
+    parser: Option<Wordcut>,
 }
 
 /// Used for parsing the dictionnary
@@ -34,7 +35,7 @@ impl Dictionnary {
 
         Ok(Dictionnary {
             dic: HashMap::new(),
-            parser: wordcut,  
+            parser: Some(wordcut),  
         })
     }
 
@@ -88,7 +89,12 @@ impl DetectWord for Dictionnary {
         // clean the string first 
         let cleaned_sentence = self.remove_punctuation_from_sentence(sentence);
         // get a list of laotian word from the sentence
-        let words = self.parser.segment_into_strings(&cleaned_sentence);
+        if self.parser.is_none() {
+            return None;
+        }
+        
+        let parser = self.parser.as_ref().unwrap();
+        let words = parser.segment_into_strings(&cleaned_sentence);
         if words.is_empty() {
             return None;
         }
