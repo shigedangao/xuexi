@@ -1,4 +1,5 @@
 mod character;
+mod punctuation;
 pub mod error;
 pub mod definition;
 pub mod common;
@@ -7,35 +8,35 @@ pub mod laotian;
 
 use character::{Characters, CharactersList};
 #[cfg(feature = "chinese")]
-use chinese::Dictionnary as CNDictionnary;
+use chinese::Dictionary as CNDictionary;
 #[cfg(feature = "laotian")]
-use laotian::Dictionnary as LaoDictionnary;
+use laotian::Dictionary as LaoDictionary;
 
 /// Get a list of characters by it's usage
 /// 
 /// # Arguments
 /// 
 /// * `&str` - A string content
-pub fn get_character_by_usage(content: &str) -> CharactersList {
-    let handler = Characters::new(content);
+pub fn get_character_by_usage(content: &str) -> Result<CharactersList, error::LibError> {
+    let handler = Characters::new(content)?;
     
-    handler.generate_characters_list()
+    Ok(handler.generate_characters_list())
 }
 
 /// Load a chinese dictionnary which allows you to get a list of chinese definitions
 #[cfg(feature = "chinese")]
-pub fn load_chinese_dictionnary() -> CNDictionnary {
-    let mut dictionnary = CNDictionnary::new();
-    dictionnary.load();
+pub fn load_chinese_dictionary() -> Result<CNDictionary, error::LibError> {
+    let mut dictionary = CNDictionary::new()?;
+    dictionary.load();
 
-    dictionnary
+    Ok(dictionary)
 }
 
 /// Load a laotian dictionnary which allows you to get a list of laotian word definitions
 #[cfg(feature = "laotian")]
-pub fn load_laotian_dictionnary() -> Result<LaoDictionnary, error::LibError> {
-    let mut dictionnary = LaoDictionnary::new()?;
-    dictionnary.load();
+pub fn load_laotian_dictionary() -> Result<LaoDictionary, error::LibError> {
+    let mut dictionary = LaoDictionary::new()?;
+    dictionary.load();
 
-    Ok(dictionnary)
+    Ok(dictionary)
 }

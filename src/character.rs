@@ -3,12 +3,11 @@ use csv::Writer;
 use serde::Serialize;
 use crate::error::LibError;
 use crate::common::{Ops, Clean};
-
-// constant
-const EMPTY_SPACE_CHARACTER: char = ' ';
+use crate::punctuation;
 
 pub struct Characters<'a> {
     content: &'a str,
+    punctuation: Vec<String>
 }
 
 #[derive(Debug, Serialize)]
@@ -26,33 +25,21 @@ impl<'a> Characters<'a> {
     /// # Arguments
     /// 
     /// * `content` - A slice of content (text, sentences)
-    pub fn new(content: &'a str) -> Self {
-        Characters { content }
+    pub fn new(content: &'a str) -> Result<Self, LibError> {
+        let p = punctuation::Puncutation::new()?;
+
+        Ok(Characters {
+            content,
+            punctuation: p.western
+        })
     }
 
     /// Generate a list of character which contain it's number of recurrency
     pub fn generate_characters_list(&self) -> CharactersList {
-        // split a content by a space to avoid working with a very long content
-        let splitted = self.content.split(EMPTY_SPACE_CHARACTER);
-        // create a list of async method which we'll join
-        let outputs: Vec<_> = splitted
-            .into_iter()
-            .map(|s| self.remove_punctuation_from_sentence(s))
-            .map(|s| self.count_char_for_sentence(&s))
-            .collect();
+        let cleaned_sentence = self.remove_punctuation_from_sentence(self.content, &self.punctuation);
+        let output = self.count_char_for_sentence(&cleaned_sentence);
     
-        let mut list = HashMap::new();
-        for map in outputs {
-            for (k, v) in map.into_iter() {
-                if let Some(lv) = list.get_mut(&k) {
-                    *lv += v;
-                } else {
-                    list.insert(k, v);
-                }
-            }
-        }
-
-        list
+        output
     }
 
     /// Count character for a sentence
@@ -115,7 +102,7 @@ mod tests {
     #[test]
     fn expect_to_return_chinese_char_list() {
         let content = "我喜歡你的狗. 你喜不喜歡我的狗?";
-        let handler = Characters::new(content);
+        let handler = Characters::new(content).unwrap();
         let res = handler.generate_characters_list();
 
         assert_eq!(*res.get(&'喜').unwrap(), 3);
@@ -130,7 +117,7 @@ mod tests {
         詞的作者是呂本中. 呂本中是宋代人. 詞的題目是去年今夜.
         "#;
 
-        let handler = Characters::new(content);
+        let handler = Characters::new(content).unwrap();
         let res = handler.generate_characters_list();
         
         assert_eq!(*res.get(&'是').unwrap(), 3);
@@ -141,7 +128,7 @@ mod tests {
     #[test]
     fn expect_to_return_ordered_character_by_presence() {
         let content = "我跟你一起吃飯. 你要喝什麼";
-        let handler = Characters::new(content);
+        let handler = Characters::new(content).unwrap();
         let res = handler.generate_characters_list();
 
         let ordered_list = res.get_ordered_characters();
@@ -156,7 +143,7 @@ mod tests {
     #[test]
     fn expect_to_export_to_csv() {
         let content = "今天天氣非常熱";
-        let handler = Characters::new(content);
+        let handler = Characters::new(content).unwrap();
         let res = handler.generate_characters_list();
 
         let csv = res.export_to_csv();
