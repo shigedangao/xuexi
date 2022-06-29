@@ -4,11 +4,13 @@ use chamkho::Wordcut;
 use crate::definition::Definition;
 use crate::common::{Clean, DetectWord};
 use crate::error::LibError;
+use crate::punctuation;
 
 #[derive(Default)]
-pub struct Dictionnary {
+pub struct Dictionary {
     dic: HashMap<String, Definition>,
     parser: Option<Wordcut>,
+    punctuation: Vec<String>
 }
 
 /// Used for parsing the dictionnary
@@ -22,10 +24,11 @@ pub struct JPEnLaoItem {
     english: String
 }
 
-impl Dictionnary {
+impl Dictionary {
     /// Create a new dictionnary and load the chamkho parser which
     /// is used to found the word in a laotian sentence
     pub fn new() -> Result<Self, LibError> {
+        let p = punctuation::Puncutation::new()?;
         // preload the wordcut dictionnary 
         let lao_dic_path = chamkho::lao_path();
         let dic = chamkho::load_dict(lao_dic_path)
@@ -33,9 +36,10 @@ impl Dictionnary {
 
         let wordcut = chamkho::Wordcut::new(dic);
 
-        Ok(Dictionnary {
+        Ok(Dictionary {
             dic: HashMap::new(),
-            parser: Some(wordcut),  
+            parser: Some(wordcut), 
+            punctuation: p.laotian 
         })
     }
 
@@ -65,7 +69,7 @@ impl Dictionnary {
             let def = Definition {
                 writing_method: key.clone(),
                 writing_method_two: None,
-                prounciation: record.phonetic.trim().to_string(),
+                pronunciation: record.phonetic.trim().to_string(),
                 english: record.english.trim().to_string(),
                 count: 0
             };
@@ -77,17 +81,17 @@ impl Dictionnary {
     } 
 }
 
-impl Clean for Dictionnary {}
+impl Clean for Dictionary {}
 
-impl DetectWord for Dictionnary {
-    fn get_dictionnary(&self) -> &HashMap<String, Definition> {
+impl DetectWord for Dictionary {
+    fn get_dictionary(&self) -> &HashMap<String, Definition> {
         &self.dic
     }
 
     fn get_list_detected_words(&self, sentence: &str) -> Option<HashMap<String, Definition>> {
         let mut matched = HashMap::new();
         // clean the string first 
-        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence);
+        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence, &self.punctuation);
         
         // get a list of laotian word from the sentence
         let parser = self.parser.as_ref()?;
@@ -117,7 +121,7 @@ mod tests {
 
     #[test]
     fn expect_to_load_lao_dictionnary() {
-        let mut dictionnary = Dictionnary::new().unwrap();
+        let mut dictionnary = Dictionary::new().unwrap();
         dictionnary.load();
 
         assert!(!dictionnary.dic.is_empty());
@@ -125,7 +129,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_item() {
-        let mut dictionnary = Dictionnary::new().unwrap();
+        let mut dictionnary = Dictionary::new().unwrap();
         dictionnary.load();
 
         let item = dictionnary.dic.get("ຮັກ");
@@ -133,13 +137,13 @@ mod tests {
 
         let item = item.unwrap();
         assert_eq!(item.writing_method, "ຮັກ");
-        assert_eq!(item.prounciation, "hak");
+        assert_eq!(item.pronunciation, "hak");
         assert_eq!(item.english, "love");
     }
 
     #[test]
     fn expect_to_get_list_word_for_sentence() {
-        let mut dictionnary = Dictionnary::new().unwrap();
+        let mut dictionnary = Dictionary::new().unwrap();
         dictionnary.load();
 
         let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ");
@@ -151,13 +155,13 @@ mod tests {
 
         let baby = baby.unwrap();
         assert_eq!(baby.writing_method, "ລູກ");
-        assert_eq!(baby.prounciation, "luuk");
+        assert_eq!(baby.pronunciation, "luuk");
         assert_eq!(baby.english, "baby");
     }
 
     #[test]
     fn expect_to_get_list_of_word_by_order() {
-        let mut dictionnary = Dictionnary::new().unwrap();
+        let mut dictionnary = Dictionary::new().unwrap();
         dictionnary.load();
 
         let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງລູກຢາກກິນເຂົ້າຫນຽວ");
@@ -172,7 +176,7 @@ mod tests {
 
     #[test]
     fn expect_to_not_match_anything() {
-        let mut dictionnary = Dictionnary::new().unwrap();
+        let mut dictionnary = Dictionary::new().unwrap();
         dictionnary.load();
 
         let words = dictionnary.get_list_detected_words("hello");

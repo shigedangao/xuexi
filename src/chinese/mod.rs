@@ -3,6 +3,8 @@ use std::io::Error;
 use std::io::{BufReader, BufRead};
 use crate::definition::Definition;
 use crate::common::{Clean, DetectWord};
+use crate::error::LibError;
+use crate::punctuation;
 
 pub mod def;
 
@@ -14,17 +16,23 @@ const LEFT_BRACKET_CHARACTER: char = '[';
 const RIGHT_BRACKET_CHARACTER: char = ']';
 
 #[derive(Debug, Clone, Default)]
-pub struct Dictionnary {
+pub struct Dictionary {
     dic: HashMap<String, Definition>,
+    punctuation: Vec<String>
 }
 
-impl Dictionnary {
-    /// Create a new empty dictionnary
-    pub fn new() -> Dictionnary {
-        Dictionnary::default()
+impl Dictionary {
+    /// Create a new empty Dictionary
+    pub fn new() -> Result<Dictionary, LibError> {
+        let p = punctuation::Puncutation::new()?;
+
+        Ok(Dictionary {
+            dic: HashMap::default(),
+            punctuation: p.chinese
+        })
     }
 
-    /// Create a new Dictionnary from the cedict_ts.u8
+    /// Create a new Dictionary from the cedict_ts.u8
     pub fn load(&mut self) {
         let mut dic = HashMap::new();
         let definition: &[u8] = include_bytes!("../../cedict_ts.u8");
@@ -46,7 +54,7 @@ impl Dictionnary {
                     }
         
                     if let Some((pinyin, rest)) = reminder.split_once(RIGHT_BRACKET_CHARACTER) {
-                        item.prounciation = pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "");
+                        item.pronunciation = pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "");
                         item.english = rest.trim().to_string();
                     }
                 },
@@ -77,10 +85,10 @@ impl Dictionnary {
     }
 }
 
-impl Clean for Dictionnary {}
+impl Clean for Dictionary {}
 
-impl DetectWord for Dictionnary {
-    fn get_dictionnary(&self) -> &HashMap<String, Definition> {
+impl DetectWord for Dictionary {
+    fn get_dictionary(&self) -> &HashMap<String, Definition> {
         &self.dic
     }
 
@@ -89,9 +97,9 @@ impl DetectWord for Dictionnary {
         let mut end_cursor = 1;
         // this is to avoid a case where we can do an infinite loop on a single character
         let mut unmatched = 0;
-        let mut dictionnary = HashMap::new();
+        let mut dictionary = HashMap::new();
         // split the sentence into a vector of characters
-        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence);
+        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence, &self.punctuation);
         let characters: Vec<char> = cleaned_sentence.chars().collect();
 
         // temp definition
@@ -99,11 +107,11 @@ impl DetectWord for Dictionnary {
         while let Some(char) = characters.get(start_cursor..end_cursor) {
             // create a word based on the start cursor and the end cursor
             let word: String = char.to_vec().iter().collect();
-            match self.get_dictionnary().get(&word) {
+            match self.get_dictionary().get(&word) {
                 Some(res) => {
                     step_def = Some(res.clone());
                     if end_cursor == characters.len() {
-                        self.insert_map_word(&mut dictionnary, &step_def);
+                        self.insert_map_word(&mut dictionary, &step_def);
                     }
 
                     end_cursor += 1;
@@ -118,9 +126,9 @@ impl DetectWord for Dictionnary {
                         start_cursor += 1;
                         end_cursor += 1;
                     } else {
-                        // Push the latest founded item in the dictionnary
-                        self.insert_map_word(&mut dictionnary, &step_def);
-                        // if nothing can be found on the dictionnary then we move the start_cursor to end_cursor - 1
+                        // Push the latest founded item in the Dictionary
+                        self.insert_map_word(&mut dictionary, &step_def);
+                        // if nothing can be found on the Dictionary then we move the start_cursor to end_cursor - 1
                         // this allow us to check the last -1 character again
                         // for example
                         // 去年今夜 -> at some point the method will check this characters 去年今
@@ -137,11 +145,11 @@ impl DetectWord for Dictionnary {
             }
         }
 
-        if dictionnary.is_empty() {
+        if dictionary.is_empty() {
             return None;
         }
 
-        Some(dictionnary)
+        Some(dictionary)
     }
 }
 
@@ -151,19 +159,19 @@ mod tests {
     use crate::common::Ops;
 
     #[test]
-    fn expect_to_load_dictionnary() {
-        let mut dictionnary = super::Dictionnary::new();
-        dictionnary.load();
+    fn expect_to_load_dictionary() {
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
 
-        assert!(!dictionnary.dic.is_empty());
+        assert!(!dictionary.dic.is_empty());
     }
 
     #[test]
     fn expect_to_get_characters() {
-        let mut dictionnary = super::Dictionnary::new();
-        dictionnary.load();
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
 
-        let words = dictionnary.get_list_detected_words("你好你好").unwrap();
+        let words = dictionary.get_list_detected_words("你好你好").unwrap();
         let nihao = words.get("你好");
 
         assert!(nihao.is_some());
@@ -175,10 +183,10 @@ mod tests {
 
     #[test]
     fn expect_to_get_ordered_characters() {
-        let mut dictionnary = super::Dictionnary::new();
-        dictionnary.load();
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
 
-        let words = dictionnary.get_list_detected_words("去年我去過日本看我好朋友日本很好看").unwrap();
+        let words = dictionary.get_list_detected_words("去年我去過日本看我好朋友日本很好看").unwrap();
         let riben = words.get("日本").unwrap();
         
         assert_eq!(riben.count, 2);
@@ -194,10 +202,10 @@ mod tests {
 
     #[test]
     fn expect_to_generate_list_with_for_multiple_sentences() {
-        let mut dictionnary = super::Dictionnary::new();
-        dictionnary.load();
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
 
-        let words = dictionnary.get_list_detected_words("今天我日本朋友吃拉麵. 日本拉麵看起來好吃! 吃拉麵讓我高興").unwrap();
+        let words = dictionary.get_list_detected_words("今天我日本朋友吃拉麵. 日本拉麵看起來好吃! 吃拉麵讓我高興").unwrap();
         
         let riben = words.get("日本").unwrap();
         assert_eq!(riben.count, 2);
@@ -213,11 +221,27 @@ mod tests {
     }
 
     #[test]
-    fn expect_to_generate_csv() {
-        let mut dictionnary = super::Dictionnary::new();
-        dictionnary.load();
+    fn expect_to_generate_list_with_punctuation() {
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
 
-        let words = dictionnary.get_list_detected_words("我昨天感冒了").unwrap();
+        let words = dictionary.get_list_detected_words("今天天氣好嗎 ? 天氣非常好. ").unwrap();
+        
+        let weather = words.get("天氣").unwrap();
+        assert_eq!(weather.count, 2);
+
+        let ma = words.get("嗎").unwrap();
+        assert_eq!(ma.count, 1);
+
+        println!("{:?}", words);
+    }
+
+    #[test]
+    fn expect_to_generate_csv() {
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
+
+        let words = dictionary.get_list_detected_words("我昨天感冒了").unwrap();
         let res = words.export_to_csv();
 
         assert!(res.is_ok());
@@ -225,10 +249,10 @@ mod tests {
 
     #[test]
     fn expect_to_return_none_when_no_chinese_word() {
-        let mut dictionnary = super::Dictionnary::new();
-        dictionnary.load();
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
 
-        let words = dictionnary.get_list_detected_words("hello");
+        let words = dictionary.get_list_detected_words("hello");
         assert!(words.is_none());
     }
 }

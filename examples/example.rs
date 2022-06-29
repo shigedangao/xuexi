@@ -8,7 +8,7 @@ fn main() {
 }
 
 fn chinese_example() {
-    let chinese = xuexi::load_chinese_dictionnary();
+    let chinese = xuexi::load_chinese_dictionary();
     let sentence = "今天天氣很熱非常熱";
 
     // hashamp
@@ -21,17 +21,21 @@ fn chinese_example() {
 
     assert_eq!(character, "熱");
     assert_eq!(definition.count, 2);
-    assert_eq!(definition.prounciation, "re4");
+    assert_eq!(definition.pronunciation, "re4");
+
+    println!("{:?}", definition);
 }
 
 fn lao_example() {
-    let lao = xuexi::load_laotian_dictionnary().unwrap();
+    let lao = xuexi::load_laotian_dictionary().unwrap();
     let sentence = "ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ";
 
     let list = lao.get_list_detected_words(sentence).unwrap();
     let eat = list.get("ກິນ").unwrap();
 
     assert_eq!(eat.writing_method, "ກິນ");
-    assert_eq!(eat.prounciation, "kin");
+    assert_eq!(eat.pronunciation, "kin");
     assert_eq!(eat.english, "eat");
+
+    println!("{:?}", eat);
 }

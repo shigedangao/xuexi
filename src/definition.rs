@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use csv::Writer;
 use crate::common::Ops;
 use crate::error::LibError;
@@ -7,11 +7,11 @@ use crate::error::LibError;
 // Custom type
 pub type DefinitionList = HashMap<String, Definition>;
 
-#[derive(Debug, Default, Clone, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Definition {
     pub writing_method: String,
     pub writing_method_two: Option<String>,
-    pub prounciation: String,
+    pub pronunciation: String,
     pub english: String,
     pub count: i64
 }
