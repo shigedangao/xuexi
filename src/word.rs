@@ -1,32 +1,9 @@
 use std::collections::HashMap;
-use crate::{error::LibError, definition::Definition};
-
-pub trait Ops<T> {
-    /// Retrieved a list of characters ordered by it's recurrence
-    fn get_ordered_characters(&self) -> Vec<T>;
-    /// Export a a type to CSV
-    ///     - Definitions: In this case this will return a csv of definitions
-    ///     - Character count: This is gonna return the character and the count amount 
-    fn export_to_csv(&self) -> Result<String, LibError>; 
-}
-
-pub trait Clean {
-    /// Remove punctuation from a sentence to avoid being count
-    /// 
-    /// # Arguments
-    /// 
-    /// * `sentence` - A slice of string which represent a sentence
-    fn remove_punctuation_from_sentence(&self, sentence: &str, punctuation: &Vec<String>) -> String {
-        let mut filtered_sentence = sentence.to_string();
-        for pattern in punctuation {
-            filtered_sentence = filtered_sentence.replace(pattern, "");
-        }
-
-        filtered_sentence
-    }
-}
+use crate::definition::Definition;
+use crate::clean::Clean;
 
 pub trait DetectWord: Clean {
+    /// Get a reference of a dictionary
     fn get_dictionary(&self) -> &HashMap<String, Definition>;
     /// Insert a definition in a map
     /// 

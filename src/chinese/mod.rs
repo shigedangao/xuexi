@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::io::Error;
 use std::io::{BufReader, BufRead};
 use crate::definition::Definition;
-use crate::common::{Clean, DetectWord};
+use crate::word::DetectWord;
+use crate::clean::Clean;
 use crate::error::LibError;
 use crate::punctuation;
 
@@ -156,7 +157,8 @@ impl DetectWord for Dictionary {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::Ops;
+    use crate::ordering::Ops;
+    use crate::export::Export;
 
     #[test]
     fn expect_to_load_dictionary() {

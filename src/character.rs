@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use serde::Serialize;
 use crate::error::LibError;
-use crate::common::{Ops, Clean};
+use crate::ordering::{Ops};
+use crate::clean::Clean;
 use crate::punctuation;
 use crate::export;
 
@@ -72,7 +73,9 @@ impl Ops<(char, i64)> for CharactersList {
 
         vec
     }
+}
 
+impl export::Export for CharactersList {
     fn export_to_csv(&self) -> Result<String, crate::error::LibError> {
         let ordered = self.get_ordered_characters();
         let items: Vec<CharacterCount> = ordered.into_iter()
@@ -90,6 +93,7 @@ impl Ops<(char, i64)> for CharactersList {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::export::Export;
 
     #[test]
     fn expect_to_return_chinese_char_list() {

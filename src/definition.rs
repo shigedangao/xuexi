@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use crate::common::Ops;
+use crate::ordering::Ops;
 use crate::error::LibError;
 use crate::export;
 
@@ -27,7 +27,9 @@ impl Ops<(String, Definition)> for DefinitionList {
 
         vec
     }
+}
 
+impl export::Export for DefinitionList {
     fn export_to_csv(&self) -> Result<String, LibError> {
         let ordered = self.get_ordered_characters();
         // get the list of definition

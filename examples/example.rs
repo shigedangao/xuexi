@@ -1,6 +1,5 @@
-use xuexi::{
-    common::{DetectWord, Ops},
-};
+use xuexi::ordering::Ops;
+use xuexi::word::DetectWord;
 
 fn main() {
     chinese_example();
@@ -8,7 +7,7 @@ fn main() {
 }
 
 fn chinese_example() {
-    let chinese = xuexi::load_chinese_dictionary();
+    let chinese = xuexi::load_chinese_dictionary().unwrap();
     let sentence = "今天天氣很熱非常熱";
 
     // hashamp
