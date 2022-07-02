@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use csv::Writer;
 use serde::Serialize;
 use crate::error::LibError;
 use crate::common::{Ops, Clean};
 use crate::punctuation;
+use crate::export;
 
 pub struct Characters<'a> {
     content: &'a str,
@@ -82,15 +82,7 @@ impl Ops<(char, i64)> for CharactersList {
             })
             .collect();
 
-        let mut wrt = Writer::from_writer(vec![]);
-        wrt.serialize(items)?;
-
-        let inner = wrt.into_inner()
-            .map_err(|err| LibError::Serialize(err.to_string()))?;
-
-        let res = String::from_utf8(inner)?;
-
-        Ok(res)
+        export::export_to_csv(items)
     }
 }
 

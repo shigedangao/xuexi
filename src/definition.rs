@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use csv::Writer;
 use crate::common::Ops;
 use crate::error::LibError;
+use crate::export;
 
 // Custom type
 pub type DefinitionList = HashMap<String, Definition>;
@@ -35,14 +35,6 @@ impl Ops<(String, Definition)> for DefinitionList {
             .map(|(_, d)| d)
             .collect();
 
-        let mut wrt = Writer::from_writer(vec![]);
-        wrt.serialize(definitions)?;
-
-        let inner = wrt.into_inner()
-            .map_err(|err| LibError::Serialize(err.to_string()))?;
-
-        let res = String::from_utf8(inner)?;
-
-        Ok(res)
+        export::export_to_csv(definitions)
     }
 }
