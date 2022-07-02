@@ -30,7 +30,7 @@ impl Ops<(String, Definition)> for DefinitionList {
 }
 
 impl export::Export for DefinitionList {
-    fn export_to_csv(&self) -> Result<String, LibError> {
+    fn to_csv(&self) -> Result<String, LibError> {
         let ordered = self.get_ordered_characters();
         // get the list of definition
         let definitions: Vec<Definition> = ordered.into_iter()

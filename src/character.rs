@@ -76,7 +76,7 @@ impl Ops<(char, i64)> for CharactersList {
 }
 
 impl export::Export for CharactersList {
-    fn export_to_csv(&self) -> Result<String, crate::error::LibError> {
+    fn to_csv(&self) -> Result<String, crate::error::LibError> {
         let ordered = self.get_ordered_characters();
         let items: Vec<CharacterCount> = ordered.into_iter()
             .map(|(char, count)| CharacterCount {
@@ -142,7 +142,7 @@ mod tests {
         let handler = Characters::new(content).unwrap();
         let res = handler.generate_characters_list();
 
-        let csv = res.export_to_csv();
+        let csv = res.to_csv();
         assert!(csv.is_ok());
     }
 }

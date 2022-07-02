@@ -244,7 +244,7 @@ mod tests {
         dictionary.load();
 
         let words = dictionary.get_list_detected_words("我昨天感冒了").unwrap();
-        let res = words.export_to_csv();
+        let res = words.to_csv();
 
         assert!(res.is_ok());
     }

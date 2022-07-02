@@ -1,7 +1,7 @@
 mod character;
 mod clean;
 mod punctuation;
-mod export;
+pub mod export;
 pub mod word;
 pub mod error;
 pub mod definition;

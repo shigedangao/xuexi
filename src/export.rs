@@ -11,7 +11,9 @@ use crate::error::LibError;
 /// * `items` - Vec<T>
 pub fn export_to_csv<T: Serialize>(items: Vec<T>) -> Result<String, LibError> {
     let mut wrt = Writer::from_writer(vec![]);
-    wrt.serialize(items)?;
+    for item in items {
+        wrt.serialize(item)?;
+    }
 
     let inner = wrt.into_inner()
         .map_err(|err| LibError::Serialize(err.to_string()))?;
@@ -25,5 +27,5 @@ pub trait Export {
     /// Export a a type to CSV
     ///     - Definitions: In this case this will return a csv of definitions
     ///     - Character count: This is gonna return the character and the count amount 
-    fn export_to_csv(&self) -> Result<String, LibError>; 
+    fn to_csv(&self) -> Result<String, LibError>; 
 }
