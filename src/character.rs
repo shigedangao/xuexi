@@ -1,9 +1,10 @@
 use std::collections::HashMap;
-use csv::Writer;
 use serde::Serialize;
 use crate::error::LibError;
-use crate::common::{Ops, Clean};
+use crate::ordering::{Ops};
+use crate::clean::Clean;
 use crate::punctuation;
+use crate::export;
 
 pub struct Characters<'a> {
     content: &'a str,
@@ -72,8 +73,10 @@ impl Ops<(char, i64)> for CharactersList {
 
         vec
     }
+}
 
-    fn export_to_csv(&self) -> Result<String, crate::error::LibError> {
+impl export::Export for CharactersList {
+    fn to_csv(&self) -> Result<String, crate::error::LibError> {
         let ordered = self.get_ordered_characters();
         let items: Vec<CharacterCount> = ordered.into_iter()
             .map(|(char, count)| CharacterCount {
@@ -82,15 +85,7 @@ impl Ops<(char, i64)> for CharactersList {
             })
             .collect();
 
-        let mut wrt = Writer::from_writer(vec![]);
-        wrt.serialize(items)?;
-
-        let inner = wrt.into_inner()
-            .map_err(|err| LibError::Serialize(err.to_string()))?;
-
-        let res = String::from_utf8(inner)?;
-
-        Ok(res)
+        export::export_to_csv(items)
     }
 }
 
@@ -98,6 +93,7 @@ impl Ops<(char, i64)> for CharactersList {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::export::Export;
 
     #[test]
     fn expect_to_return_chinese_char_list() {
@@ -146,7 +142,7 @@ mod tests {
         let handler = Characters::new(content).unwrap();
         let res = handler.generate_characters_list();
 
-        let csv = res.export_to_csv();
+        let csv = res.to_csv();
         assert!(csv.is_ok());
     }
 }

@@ -26,7 +26,7 @@ The library is feature gates. Below are example for the supported languages
 In the Cargo.toml file, add these line below
 
 ```toml
-xuexi = { version = "1.0", features = ["chinese"] }
+xuexi = { version = "0.1.0", features = ["chinese"] }
 ```
 
 Then you can import the dictionary like so
