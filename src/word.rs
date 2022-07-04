@@ -25,10 +25,10 @@ pub trait DetectWord: Clean {
             map.insert(item.writing_method.clone(), item_clone);
         }
     }
-    /// Get a list of detected words based on the loaded cedict dictionnary from a given sentence
+    /// Get a list of detected words based on the loaded dictionnary from a given sentence
     /// 
     /// # Arguments
     /// 
-    /// * `sentence` - A string slice which represent a sentence
-    fn get_list_detected_words(&self, sentence: &str) -> Option<HashMap<String, Definition>>;
+    /// * `sentence` - impl AsRef<str> anything that can be converted to a &str
+    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>>;
 }

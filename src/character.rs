@@ -38,9 +38,8 @@ impl<'a> Characters<'a> {
     /// Generate a list of character which contain it's number of recurrency
     pub fn generate_characters_list(&self) -> CharactersList {
         let cleaned_sentence = self.remove_punctuation_from_sentence(self.content, &self.punctuation);
-        let output = self.count_char_for_sentence(&cleaned_sentence);
-    
-        output
+        
+        self.count_char_for_sentence(&cleaned_sentence)
     }
 
     /// Count character for a sentence

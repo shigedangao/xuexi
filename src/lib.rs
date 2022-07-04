@@ -20,8 +20,8 @@ use laotian::Dictionary as LaoDictionary;
 /// # Arguments
 /// 
 /// * `&str` - A string content
-pub fn get_character_by_usage(content: &str) -> Result<CharactersList, error::LibError> {
-    let handler = Characters::new(content)?;
+pub fn get_character_by_usage(content: impl AsRef<str>) -> Result<CharactersList, error::LibError> {
+    let handler = Characters::new(content.as_ref())?;
     
     Ok(handler.generate_characters_list())
 }

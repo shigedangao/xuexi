@@ -89,10 +89,10 @@ impl DetectWord for Dictionary {
         &self.dic
     }
 
-    fn get_list_detected_words(&self, sentence: &str) -> Option<HashMap<String, Definition>> {
+    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>> {
         let mut matched = HashMap::new();
         // clean the string first 
-        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence, &self.punctuation);
+        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence.as_ref(), &self.punctuation);
         
         // get a list of laotian word from the sentence
         let parser = self.parser.as_ref()?;

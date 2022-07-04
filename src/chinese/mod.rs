@@ -73,16 +73,15 @@ impl Dictionary {
     /// # Arguments
     /// * `line` - Result<String, Error>
     fn verify_line(&self, line: Result<String, Error>) -> Option<String> {
-        match line {
-            Ok(content) => {
-                if content.starts_with(NB_SIGN_CHARACTER_CEDICT) || content.starts_with(PERCENT_CHARACTER_CEDICT) {
-                    return None;
-                }
-
-                Some(content)
+        if let Ok(content) = line {
+            if content.starts_with(NB_SIGN_CHARACTER_CEDICT) || content.starts_with(PERCENT_CHARACTER_CEDICT) {
+                return None;
             }
-            Err(_) => None,
+
+            return Some(content)
         }
+
+        None
     }
 }
 
@@ -93,14 +92,14 @@ impl DetectWord for Dictionary {
         &self.dic
     }
 
-    fn get_list_detected_words(&self, sentence: &str) -> Option<HashMap<String, Definition>> {
+    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>> {
         let mut start_cursor = 0;
         let mut end_cursor = 1;
         // this is to avoid a case where we can do an infinite loop on a single character
         let mut unmatched = 0;
         let mut dictionary = HashMap::new();
         // split the sentence into a vector of characters
-        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence, &self.punctuation);
+        let cleaned_sentence = self.remove_punctuation_from_sentence(sentence.as_ref(), &self.punctuation);
         let characters: Vec<char> = cleaned_sentence.chars().collect();
 
         // temp definition
