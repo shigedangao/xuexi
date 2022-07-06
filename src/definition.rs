@@ -16,8 +16,36 @@ pub struct Definition {
     pub count: i64
 }
 
-pub trait CommonDefinitionLanguage {
-    fn get_english_translations(&self) -> Vec<String>;
+/// Use to merge two definitions which has the same key.
+/// 
+/// For example the cedict dictionary has multiple definition of the character 得
+/// To avoid having only the last item to be store in the HashMap. This trait allows
+/// to merge the new definition with the older definition. 
+/// 
+/// This is so far not very fancy, it's just string concat for some field. This might need to change
+/// and instead use a Vector instead of a String
+pub trait InsertOrMerge {
+    /// # Arguments
+    /// 
+    /// * `key` - String
+    /// * `item` - Definition (the new definition)
+    fn insert_or_merge(&mut self, key: String, item: Definition);
+}
+
+impl Definition {
+    /// Get a vector of english translation from the string representation
+    pub fn get_english_translations(&self) -> Vec<String> {
+        self.english.split('/')
+            .into_iter()
+            .filter_map(|s| {
+                if s.is_empty() {
+                    return None;
+                }
+
+                Some(s.trim().to_string())
+            })
+            .collect::<Vec<String>>()
+    }
 }
 
 impl Ops<(String, Definition)> for DefinitionList {
@@ -38,5 +66,20 @@ impl export::Export for DefinitionList {
             .collect();
 
         export::export_to_csv(definitions)
+    }
+}
+
+impl InsertOrMerge for DefinitionList {
+    fn insert_or_merge(&mut self, key: String, item: Definition) {
+        if let Some(founded) = self.get_mut(&key) {
+            // merge the two english translation
+            founded.english = format!("{}/{}", founded.english, item.english);
+            // Merge the two pronounciation if it containing a different pronounciation
+            if !founded.pronunciation.contains(&item.pronunciation) {
+                founded.pronunciation = format!("{}/{}", founded.pronunciation, item.pronunciation);
+            }
+        } else {
+            self.insert(key, item);
+        }
     }
 }

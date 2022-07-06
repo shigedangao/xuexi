@@ -1,13 +1,11 @@
 use std::collections::HashMap;
 use std::io::Error;
 use std::io::{BufReader, BufRead};
-use crate::definition::Definition;
+use crate::definition::{Definition, InsertOrMerge};
 use crate::word::DetectWord;
 use crate::clean::Clean;
 use crate::error::LibError;
 use crate::punctuation;
-
-pub mod def;
 
 // Constant
 const NB_SIGN_CHARACTER_CEDICT: char = '#';
@@ -62,7 +60,7 @@ impl Dictionary {
                 None => continue
             }
 
-            dic.insert(item.writing_method.to_owned(), item);
+            dic.insert_or_merge(item.writing_method.to_owned(), item);
         }
 
         self.dic = dic;
@@ -168,6 +166,17 @@ mod tests {
     }
 
     #[test]
+    fn expect_to_get_same_char_and_different_pronounciation() {
+        let mut dictionary = super::Dictionary::new().unwrap();
+        dictionary.load();
+
+        let res = dictionary.get_list_detected_words("得").unwrap();
+        let dei = res.get("得").unwrap();
+
+        assert_eq!(dei.pronunciation, "de2/de5/dei3");
+    }
+
+    #[test]
     fn expect_to_get_characters() {
         let mut dictionary = super::Dictionary::new().unwrap();
         dictionary.load();
@@ -233,8 +242,6 @@ mod tests {
 
         let ma = words.get("嗎").unwrap();
         assert_eq!(ma.count, 1);
-
-        println!("{:?}", words);
     }
 
     #[test]
