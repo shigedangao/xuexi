@@ -32,3 +32,7 @@ pub trait DetectWord: Clean {
     /// * `sentence` - impl AsRef<str> anything that can be converted to a &str
     fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>>;
 }
+
+pub trait InsertOrMerge {
+    fn insert_or_merge(&mut self, key: String, item: Definition);
+}

@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 use crate::ordering::Ops;
 use crate::error::LibError;
 use crate::export;
+use crate::word::InsertOrMerge;
 
 // Custom type
 pub type DefinitionList = HashMap<String, Definition>;
@@ -16,8 +17,20 @@ pub struct Definition {
     pub count: i64
 }
 
-pub trait CommonDefinitionLanguage {
-    fn get_english_translations(&self) -> Vec<String>;
+impl Definition {
+    /// Get a vector of english translation from the string representation
+    pub fn get_english_translations(&self) -> Vec<String> {
+        self.english.split('/')
+            .into_iter()
+            .filter_map(|s| {
+                if s.is_empty() {
+                    return None;
+                }
+
+                Some(s.trim().to_string())
+            })
+            .collect::<Vec<String>>()
+    }
 }
 
 impl Ops<(String, Definition)> for DefinitionList {
@@ -38,5 +51,20 @@ impl export::Export for DefinitionList {
             .collect();
 
         export::export_to_csv(definitions)
+    }
+}
+
+impl InsertOrMerge for DefinitionList {
+    fn insert_or_merge(&mut self, key: String, item: Definition) {
+        if let Some(founded) = self.get_mut(&key) {
+            // merge the two english translation
+            founded.english = format!("{}/{}", founded.english, item.english);
+            // Merge the two pronounciation if it containing a different pronounciation
+            if !founded.pronunciation.contains(&item.pronunciation) {
+                founded.pronunciation = format!("{}/{}", founded.pronunciation, item.pronunciation);
+            }
+        } else {
+            self.insert(key, item);
+        }
     }
 }

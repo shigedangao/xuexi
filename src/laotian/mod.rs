@@ -3,7 +3,7 @@ use serde::Deserialize;
 use chamkho::Wordcut;
 use crate::definition::Definition;
 use crate::clean::Clean;
-use crate::word::DetectWord;
+use crate::word::{DetectWord, InsertOrMerge};
 use crate::error::LibError;
 use crate::punctuation;
 
@@ -17,9 +17,9 @@ pub struct Dictionary {
 /// Used for parsing the dictionnary
 #[derive(Debug, Clone, Deserialize)]
 pub struct JPEnLaoItem {
-    #[serde(rename(deserialize = "Lao"))]
+    #[serde(rename(deserialize = "LaoWord"))]
     lao: String,
-    #[serde(rename(deserialize = "phonetic alphabet"))]
+    #[serde(rename(deserialize = "Pronunciation"))]
     phonetic: String,
     #[serde(rename(deserialize = "English"))]
     english: String
@@ -39,8 +39,8 @@ impl Dictionary {
 
         Ok(Dictionary {
             dic: HashMap::new(),
-            parser: Some(wordcut), 
-            punctuation: p.laotian 
+            parser: Some(wordcut),
+            punctuation: p.laotian
         })
     }
 
@@ -55,7 +55,7 @@ impl Dictionary {
     /// * `&mut self` - Self
     pub fn load(&mut self) {
         let mut dic = HashMap::new();
-        let resource: &[u8] = include_bytes!("../../jp-lao-en.csv");
+        let resource: &[u8] = include_bytes!("../../lao-eng-dictionary.csv");
 
         // reading the csv
         let mut reader = csv::Reader::from_reader(resource);
@@ -75,7 +75,7 @@ impl Dictionary {
                 count: 0
             };
 
-            dic.insert(key, def);
+            dic.insert_or_merge(key, def);
         }
 
         self.dic = dic;
@@ -156,8 +156,12 @@ mod tests {
 
         let baby = baby.unwrap();
         assert_eq!(baby.writing_method, "ລູກ");
-        assert_eq!(baby.pronunciation, "luuk");
-        assert_eq!(baby.english, "baby");
+        assert_eq!(baby.pronunciation, "lù:k");
+        assert_eq!(baby.english, "below/under/low/baby/downstairs");
+
+        let english_definitions = baby.get_english_translations();
+        assert_eq!(english_definitions.get(0).unwrap(), "below");
+        assert_eq!(english_definitions.last().unwrap(), "downstairs");
     }
 
     #[test]
