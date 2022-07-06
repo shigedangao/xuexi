@@ -3,7 +3,6 @@ use serde::{Serialize, Deserialize};
 use crate::ordering::Ops;
 use crate::error::LibError;
 use crate::export;
-use crate::word::InsertOrMerge;
 
 // Custom type
 pub type DefinitionList = HashMap<String, Definition>;
@@ -15,6 +14,22 @@ pub struct Definition {
     pub pronunciation: String,
     pub english: String,
     pub count: i64
+}
+
+/// Use to merge two definitions which has the same key.
+/// 
+/// For example the cedict dictionary has multiple definition of the character 得
+/// To avoid having only the last item to be store in the HashMap. This trait allows
+/// to merge the new definition with the older definition. 
+/// 
+/// This is so far not very fancy, it's just string concat for some field. This might need to change
+/// and instead use a Vector instead of a String
+pub trait InsertOrMerge {
+    /// # Arguments
+    /// 
+    /// * `key` - String
+    /// * `item` - Definition (the new definition)
+    fn insert_or_merge(&mut self, key: String, item: Definition);
 }
 
 impl Definition {
@@ -54,19 +69,7 @@ impl export::Export for DefinitionList {
     }
 }
 
-/// Use to merge two definitions which has the same key.
-/// 
-/// For example the cedict dictionary has multiple definition of the character 得
-/// To avoid having only the last item to be store in the HashMap. This trait allows
-/// to merge the new definition with the older definition. 
-/// 
-/// This is so far not very fancy, it's just string concat for some field. This might need to change
-/// and instead use a Vector instead of a String
 impl InsertOrMerge for DefinitionList {
-    /// # Arguments
-    /// 
-    /// * `key` - String
-    /// * `item` - Definition (the new definition)
     fn insert_or_merge(&mut self, key: String, item: Definition) {
         if let Some(founded) = self.get_mut(&key) {
             // merge the two english translation

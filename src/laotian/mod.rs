@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use serde::Deserialize;
 use chamkho::Wordcut;
-use crate::definition::Definition;
+use crate::definition::{Definition, InsertOrMerge};
 use crate::clean::Clean;
-use crate::word::{DetectWord, InsertOrMerge};
+use crate::word::DetectWord;
 use crate::error::LibError;
 use crate::punctuation;
 

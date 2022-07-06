@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::io::Error;
 use std::io::{BufReader, BufRead};
-use crate::definition::Definition;
-use crate::word::{DetectWord, InsertOrMerge};
+use crate::definition::{Definition, InsertOrMerge};
+use crate::word::DetectWord;
 use crate::clean::Clean;
 use crate::error::LibError;
 use crate::punctuation;
