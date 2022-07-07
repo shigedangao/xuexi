@@ -11,8 +11,8 @@ pub type DefinitionList = HashMap<String, Definition>;
 pub struct Definition {
     pub writing_method: String,
     pub writing_method_two: Option<String>,
-    pub pronunciation: String,
-    pub english: String,
+    pub pronunciation: Vec<String>,
+    pub translation: Vec<String>,
     pub count: i64
 }
 
@@ -33,18 +33,20 @@ pub trait InsertOrMerge {
 }
 
 impl Definition {
-    /// Get a vector of english translation from the string representation
-    pub fn get_english_translations(&self) -> Vec<String> {
-        self.english.split('/')
-            .into_iter()
-            .filter_map(|s| {
-                if s.is_empty() {
-                    return None;
-                }
+    pub fn merge_definition(&mut self, item: Self) {
+        // merge pronounciation vec
+        if let Some(new_pronounciation) = item.pronunciation.get(0) {
+            if !self.pronunciation.contains(new_pronounciation) {
+                self.pronunciation.push(new_pronounciation.to_owned());
+            }
+        }
 
-                Some(s.trim().to_string())
-            })
-            .collect::<Vec<String>>()
+        // merge definitions vec
+        if let Some(new_translation) = item.translation.get(0) {
+            if !self.translation.contains(new_translation) {
+                self.translation.push(new_translation.to_owned());
+            }
+        }
     }
 }
 
@@ -72,12 +74,7 @@ impl export::Export for DefinitionList {
 impl InsertOrMerge for DefinitionList {
     fn insert_or_merge(&mut self, key: String, item: Definition) {
         if let Some(founded) = self.get_mut(&key) {
-            // merge the two english translation
-            founded.english = format!("{}/{}", founded.english, item.english);
-            // Merge the two pronounciation if it containing a different pronounciation
-            if !founded.pronunciation.contains(&item.pronunciation) {
-                founded.pronunciation = format!("{}/{}", founded.pronunciation, item.pronunciation);
-            }
+            founded.merge_definition(item)
         } else {
             self.insert(key, item);
         }

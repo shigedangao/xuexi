@@ -70,8 +70,8 @@ impl Dictionary {
             let def = Definition {
                 writing_method: key.clone(),
                 writing_method_two: None,
-                pronunciation: record.phonetic.trim().to_string(),
-                english: record.english.trim().to_string(),
+                pronunciation: vec![record.phonetic.trim().to_string()],
+                translation: vec![record.english.trim().to_string()],
                 count: 0
             };
 
@@ -138,8 +138,8 @@ mod tests {
 
         let item = item.unwrap();
         assert_eq!(item.writing_method, "ຮັກ");
-        assert_eq!(item.pronunciation, "hak");
-        assert_eq!(item.english, "love");
+        assert_eq!(item.pronunciation.get(0).unwrap(), "hak");
+        assert_eq!(item.translation.get(0).unwrap(), "love");
     }
 
     #[test]
@@ -156,12 +156,9 @@ mod tests {
 
         let baby = baby.unwrap();
         assert_eq!(baby.writing_method, "ລູກ");
-        assert_eq!(baby.pronunciation, "lù:k");
-        assert_eq!(baby.english, "below/under/low/baby/downstairs");
-
-        let english_definitions = baby.get_english_translations();
-        assert_eq!(english_definitions.get(0).unwrap(), "below");
-        assert_eq!(english_definitions.last().unwrap(), "downstairs");
+        assert_eq!(baby.pronunciation.get(0).unwrap(), "lù:k");
+        assert_eq!(baby.translation.get(0).unwrap(), "below");
+        assert_eq!(baby.translation.last().unwrap(), "downstairs");
     }
 
     #[test]

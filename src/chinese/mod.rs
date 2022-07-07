@@ -13,6 +13,7 @@ const PERCENT_CHARACTER_CEDICT: char = '%';
 const EMPTY_SPACE_CHARACTER: char = ' ';
 const LEFT_BRACKET_CHARACTER: char = '[';
 const RIGHT_BRACKET_CHARACTER: char = ']';
+const SLASH_CHARACTER: char = '/';
 
 #[derive(Debug, Clone, Default)]
 pub struct Dictionary {
@@ -38,37 +39,40 @@ impl Dictionary {
         let buffer = BufReader::new(definition);
         
         for line in buffer.lines() {
-            let mut item = Definition::default();
-            match self.verify_line(line) {
-                Some(content) => {
-                    let mut reminder = "";
-                    if let Some((tw_character, rest)) = content.split_once(EMPTY_SPACE_CHARACTER) {
-                        item.writing_method = tw_character.to_owned();
-                        reminder = rest;
-                    }
+            if let Some(content) = self.verify_line(line) {
+                let mut item = Definition::default();
+                let mut reminder = "";
+                if let Some((tw_character, rest)) = content.split_once(EMPTY_SPACE_CHARACTER) {
+                    item.writing_method = tw_character.to_owned();
+                    reminder = rest;
+                }
         
-                    if let Some((sf_character, rest)) = reminder.split_once(EMPTY_SPACE_CHARACTER) {
-                        item.writing_method_two = Some(sf_character.to_owned());
-                        reminder = rest;
-                    }
+                if let Some((sf_character, rest)) = reminder.split_once(EMPTY_SPACE_CHARACTER) {
+                    item.writing_method_two = Some(sf_character.to_owned());
+                    reminder = rest;
+                }
         
-                    if let Some((pinyin, rest)) = reminder.split_once(RIGHT_BRACKET_CHARACTER) {
-                        item.pronunciation = pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "");
-                        item.english = rest.trim().to_string();
-                    }
-                },
-                None => continue
-            }
+                if let Some((pinyin, rest)) = reminder.split_once(RIGHT_BRACKET_CHARACTER) {
+                    item.pronunciation = vec![pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "")];
+                    reminder = rest;
+                }
 
-            dic.insert_or_merge(item.writing_method.to_owned(), item);
+                item.translation = reminder.split(SLASH_CHARACTER)
+                    .map(|v| v.to_owned())
+                    .collect();
+
+                dic.insert_or_merge(item.writing_method.to_owned(), item);
+            }
         }
 
         self.dic = dic;
     }
 
-    /// Check that the line does not contains any character that we want to avoid
+    /// Check that the line does not contains any character that we want to avoid.
+    /// Cedict usually begin with a set of character such as '#' and '%' that we want to avoid parsing
     /// 
     /// # Arguments
+    /// 
     /// * `line` - Result<String, Error>
     fn verify_line(&self, line: Result<String, Error>) -> Option<String> {
         if let Ok(content) = line {
@@ -173,7 +177,8 @@ mod tests {
         let res = dictionary.get_list_detected_words("得").unwrap();
         let dei = res.get("得").unwrap();
 
-        assert_eq!(dei.pronunciation, "de2/de5/dei3");
+        assert_eq!(dei.pronunciation.get(0).unwrap(), "de2");
+        assert_eq!(dei.pronunciation.last().unwrap(), "dei3");
     }
 
     #[test]
@@ -251,6 +256,8 @@ mod tests {
 
         let words = dictionary.get_list_detected_words("我昨天感冒了").unwrap();
         let res = words.to_csv();
+
+        println!("{:?}", res);
 
         assert!(res.is_ok());
     }
