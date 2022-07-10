@@ -59,8 +59,13 @@ impl Dictionary {
 
                 item.translations = reminder
                     .split(SLASH_CHARACTER)
-                    .filter(|v| !v.is_empty())
-                    .map(|v| v.to_owned())
+                    .filter_map(|v| {
+                        if !v.is_empty() {
+                            return Some(v.to_string())
+                        }
+
+                        None
+                    })
                     .collect();
 
                 dic.insert_or_merge(item.writing_method.to_owned(), item);
