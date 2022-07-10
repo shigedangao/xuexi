@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use serde::ser::SerializeStruct;
 use serde::{Serialize, Deserialize};
 use crate::ordering::Ops;
 use crate::error::LibError;
@@ -7,12 +8,12 @@ use crate::export;
 // Custom type
 pub type DefinitionList = HashMap<String, Definition>;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct Definition {
     pub writing_method: String,
-    pub writing_method_two: Option<String>,
-    pub pronunciation: String,
-    pub english: String,
+    pub second_writing_method: Option<String>,
+    pub pronunciations: Vec<String>,
+    pub translations: Vec<String>,
     pub count: i64
 }
 
@@ -33,18 +34,20 @@ pub trait InsertOrMerge {
 }
 
 impl Definition {
-    /// Get a vector of english translation from the string representation
-    pub fn get_english_translations(&self) -> Vec<String> {
-        self.english.split('/')
-            .into_iter()
-            .filter_map(|s| {
-                if s.is_empty() {
-                    return None;
-                }
+    pub fn merge_definition(&mut self, item: Self) {
+        // merge pronounciation vec
+        if let Some(new_pronounciation) = item.pronunciations.get(0) {
+            if !self.pronunciations.contains(new_pronounciation) {
+                self.pronunciations.push(new_pronounciation.to_owned());
+            }
+        }
 
-                Some(s.trim().to_string())
-            })
-            .collect::<Vec<String>>()
+        // merge definitions vec
+        if let Some(new_translation) = item.translations.get(0) {
+            if !self.translations.contains(new_translation) {
+                self.translations.push(new_translation.to_owned());
+            }
+        }
     }
 }
 
@@ -72,14 +75,26 @@ impl export::Export for DefinitionList {
 impl InsertOrMerge for DefinitionList {
     fn insert_or_merge(&mut self, key: String, item: Definition) {
         if let Some(founded) = self.get_mut(&key) {
-            // merge the two english translation
-            founded.english = format!("{}/{}", founded.english, item.english);
-            // Merge the two pronounciation if it containing a different pronounciation
-            if !founded.pronunciation.contains(&item.pronunciation) {
-                founded.pronunciation = format!("{}/{}", founded.pronunciation, item.pronunciation);
-            }
+            founded.merge_definition(item)
         } else {
             self.insert(key, item);
         }
+    }
+}
+
+// Implement Serialize trait as we can't export vector to csv
+impl Serialize for Definition {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer
+    {
+        let mut s = serializer.serialize_struct("Definition", 5)?;
+        s.serialize_field("writing_method", &self.writing_method)?;
+        s.serialize_field("second_writing_method", &self.second_writing_method)?;
+        s.serialize_field("pronounciation", &self.pronunciations.join(","))?;
+        s.serialize_field("translation", &self.translations.join(","))?;
+        s.serialize_field("count", &self.count)?;
+
+        s.end()
     }
 }

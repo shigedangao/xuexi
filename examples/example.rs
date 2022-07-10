@@ -20,7 +20,7 @@ fn chinese_example() {
 
     assert_eq!(character, "熱");
     assert_eq!(definition.count, 2);
-    assert_eq!(definition.pronunciation, "re4");
+    assert_eq!(definition.pronunciations.get(0).unwrap(), "re4");
 
     println!("{:?}", definition);
 }
@@ -33,8 +33,8 @@ fn lao_example() {
     let eat = list.get("ກິນ").unwrap();
 
     assert_eq!(eat.writing_method, "ກິນ");
-    assert_eq!(eat.pronunciation, "kin");
-    assert_eq!(eat.english, "eat");
+    assert_eq!(eat.pronunciations.get(0).unwrap(), "kin");
+    assert_eq!(eat.translations.get(0).unwrap(), "eat");
 
     println!("{:?}", eat);
 }
