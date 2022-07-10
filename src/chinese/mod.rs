@@ -54,10 +54,12 @@ impl Dictionary {
         
                 if let Some((pinyin, rest)) = reminder.split_once(RIGHT_BRACKET_CHARACTER) {
                     item.pronunciations = vec![pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "")];
-                    reminder = rest;
+                    reminder = rest.trim();
                 }
 
-                item.translations = reminder.split(SLASH_CHARACTER)
+                item.translations = reminder
+                    .split(SLASH_CHARACTER)
+                    .filter(|v| !v.is_empty())
                     .map(|v| v.to_owned())
                     .collect();
 
