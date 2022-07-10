@@ -69,9 +69,9 @@ impl Dictionary {
             // create a definition from the record
             let def = Definition {
                 writing_method: key.clone(),
-                writing_method_two: None,
-                pronunciation: vec![record.phonetic.trim().to_string()],
-                translation: vec![record.english.trim().to_string()],
+                second_writing_method: None,
+                pronunciations: vec![record.phonetic.trim().to_string()],
+                translations: vec![record.english.trim().to_string()],
                 count: 0
             };
 
@@ -138,8 +138,8 @@ mod tests {
 
         let item = item.unwrap();
         assert_eq!(item.writing_method, "ຮັກ");
-        assert_eq!(item.pronunciation.get(0).unwrap(), "hak");
-        assert_eq!(item.translation.get(0).unwrap(), "love");
+        assert_eq!(item.pronunciations.get(0).unwrap(), "hak");
+        assert_eq!(item.translations.get(0).unwrap(), "love");
     }
 
     #[test]
@@ -156,9 +156,9 @@ mod tests {
 
         let baby = baby.unwrap();
         assert_eq!(baby.writing_method, "ລູກ");
-        assert_eq!(baby.pronunciation.get(0).unwrap(), "lù:k");
-        assert_eq!(baby.translation.get(0).unwrap(), "below");
-        assert_eq!(baby.translation.last().unwrap(), "downstairs");
+        assert_eq!(baby.pronunciations.get(0).unwrap(), "lù:k");
+        assert_eq!(baby.translations.get(0).unwrap(), "below");
+        assert_eq!(baby.translations.last().unwrap(), "downstairs");
     }
 
     #[test]

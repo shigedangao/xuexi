@@ -1,6 +1,5 @@
 use csv::Writer;
 use serde::Serialize;
-
 use crate::error::LibError;
 
 /// Helper method to export a vec of items which implement the Serialize trait

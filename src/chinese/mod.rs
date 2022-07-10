@@ -48,16 +48,16 @@ impl Dictionary {
                 }
         
                 if let Some((sf_character, rest)) = reminder.split_once(EMPTY_SPACE_CHARACTER) {
-                    item.writing_method_two = Some(sf_character.to_owned());
+                    item.second_writing_method = Some(sf_character.to_owned());
                     reminder = rest;
                 }
         
                 if let Some((pinyin, rest)) = reminder.split_once(RIGHT_BRACKET_CHARACTER) {
-                    item.pronunciation = vec![pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "")];
+                    item.pronunciations = vec![pinyin.to_owned().replace(LEFT_BRACKET_CHARACTER, "")];
                     reminder = rest;
                 }
 
-                item.translation = reminder.split(SLASH_CHARACTER)
+                item.translations = reminder.split(SLASH_CHARACTER)
                     .map(|v| v.to_owned())
                     .collect();
 
@@ -177,8 +177,8 @@ mod tests {
         let res = dictionary.get_list_detected_words("得").unwrap();
         let dei = res.get("得").unwrap();
 
-        assert_eq!(dei.pronunciation.get(0).unwrap(), "de2");
-        assert_eq!(dei.pronunciation.last().unwrap(), "dei3");
+        assert_eq!(dei.pronunciations.get(0).unwrap(), "de2");
+        assert_eq!(dei.pronunciations.last().unwrap(), "dei3");
     }
 
     #[test]

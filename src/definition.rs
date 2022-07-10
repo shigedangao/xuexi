@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use serde::ser::SerializeStruct;
 use serde::{Serialize, Deserialize};
 use crate::ordering::Ops;
 use crate::error::LibError;
@@ -7,12 +8,12 @@ use crate::export;
 // Custom type
 pub type DefinitionList = HashMap<String, Definition>;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct Definition {
     pub writing_method: String,
-    pub writing_method_two: Option<String>,
-    pub pronunciation: Vec<String>,
-    pub translation: Vec<String>,
+    pub second_writing_method: Option<String>,
+    pub pronunciations: Vec<String>,
+    pub translations: Vec<String>,
     pub count: i64
 }
 
@@ -35,16 +36,16 @@ pub trait InsertOrMerge {
 impl Definition {
     pub fn merge_definition(&mut self, item: Self) {
         // merge pronounciation vec
-        if let Some(new_pronounciation) = item.pronunciation.get(0) {
-            if !self.pronunciation.contains(new_pronounciation) {
-                self.pronunciation.push(new_pronounciation.to_owned());
+        if let Some(new_pronounciation) = item.pronunciations.get(0) {
+            if !self.pronunciations.contains(new_pronounciation) {
+                self.pronunciations.push(new_pronounciation.to_owned());
             }
         }
 
         // merge definitions vec
-        if let Some(new_translation) = item.translation.get(0) {
-            if !self.translation.contains(new_translation) {
-                self.translation.push(new_translation.to_owned());
+        if let Some(new_translation) = item.translations.get(0) {
+            if !self.translations.contains(new_translation) {
+                self.translations.push(new_translation.to_owned());
             }
         }
     }
@@ -78,5 +79,22 @@ impl InsertOrMerge for DefinitionList {
         } else {
             self.insert(key, item);
         }
+    }
+}
+
+// Implement Serialize trait as we can't export vector to csv
+impl Serialize for Definition {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer
+    {
+        let mut s = serializer.serialize_struct("Definition", 5)?;
+        s.serialize_field("writing_method", &self.writing_method)?;
+        s.serialize_field("second_writing_method", &self.second_writing_method)?;
+        s.serialize_field("pronounciation", &self.pronunciations.join(","))?;
+        s.serialize_field("translation", &self.translations.join(","))?;
+        s.serialize_field("count", &self.count)?;
+
+        s.end()
     }
 }
