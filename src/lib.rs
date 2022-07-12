@@ -28,8 +28,8 @@ pub fn get_character_by_usage(content: impl AsRef<str>) -> Result<CharactersList
 
 /// Load a chinese dictionnary which allows you to get a list of chinese definitions
 #[cfg(feature = "chinese")]
-pub fn load_chinese_dictionary() -> Result<CNDictionary, error::LibError> {
-    let mut dictionary = CNDictionary::new()?;
+pub fn load_chinese_dictionary(version: Option<chinese::Version>) -> Result<CNDictionary, error::LibError> {
+    let mut dictionary = CNDictionary::new(version)?;
     dictionary.load();
 
     Ok(dictionary)

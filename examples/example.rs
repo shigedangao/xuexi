@@ -7,7 +7,7 @@ fn main() {
 }
 
 fn chinese_example() {
-    let chinese = xuexi::load_chinese_dictionary().unwrap();
+    let chinese = xuexi::load_chinese_dictionary(None).unwrap();
     let sentence = "今天天氣很熱非常熱";
 
     // hashamp

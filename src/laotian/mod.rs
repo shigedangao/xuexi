@@ -85,10 +85,6 @@ impl Dictionary {
 impl Clean for Dictionary {}
 
 impl DetectWord for Dictionary {
-    fn get_dictionary(&self) -> &HashMap<String, Definition> {
-        &self.dic
-    }
-
     fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>> {
         let mut matched = HashMap::new();
         // clean the string first 
@@ -103,7 +99,7 @@ impl DetectWord for Dictionary {
 
         for word in words {
             if let Some(item) = self.dic.get(&word) {
-                self.insert_map_word(&mut matched, &Some(item.to_owned()));
+                self.insert_map_word(&mut matched, &Some(item.to_owned()), &item.writing_method);
             }
         }
 
