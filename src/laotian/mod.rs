@@ -33,7 +33,7 @@ impl Dictionary {
         // preload the wordcut dictionnary 
         let lao_dic_path = chamkho::lao_path();
         let dic = chamkho::load_dict(lao_dic_path)
-            .map_err(|err| LibError::LaoDictionnary(err.to_string()))?;
+            .map_err(|err| LibError::LaoDictionary(err.to_string()))?;
 
         let wordcut = chamkho::Wordcut::new(dic);
 
@@ -85,10 +85,6 @@ impl Dictionary {
 impl Clean for Dictionary {}
 
 impl DetectWord for Dictionary {
-    fn get_dictionary(&self) -> &HashMap<String, Definition> {
-        &self.dic
-    }
-
     fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>> {
         let mut matched = HashMap::new();
         // clean the string first 
@@ -103,7 +99,7 @@ impl DetectWord for Dictionary {
 
         for word in words {
             if let Some(item) = self.dic.get(&word) {
-                self.insert_map_word(&mut matched, &Some(item.to_owned()));
+                self.insert_map_word(&mut matched, &Some(item.to_owned()), &item.writing_method);
             }
         }
 
