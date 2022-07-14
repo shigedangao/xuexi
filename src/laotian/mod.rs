@@ -33,7 +33,7 @@ impl Dictionary {
         // preload the wordcut dictionnary 
         let lao_dic_path = chamkho::lao_path();
         let dic = chamkho::load_dict(lao_dic_path)
-            .map_err(|err| LibError::LaoDictionnary(err.to_string()))?;
+            .map_err(|err| LibError::LaoDictionary(err.to_string()))?;
 
         let wordcut = chamkho::Wordcut::new(dic);
 
