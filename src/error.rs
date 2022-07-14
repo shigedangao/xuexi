@@ -4,6 +4,7 @@ use std::string::FromUtf8Error;
 pub enum LibError {
     Serialize(String),
     Utf8(String),
+    ChineseDictionary(String),
     LaoDictionnary(String),
     Puncutation(String)
 }
@@ -13,7 +14,8 @@ impl std::fmt::Display for LibError {
         match self {
             LibError::Serialize(msg) => write!(f, "Fail to serialize due to: {msg}"),
             LibError::Utf8(msg) => write!(f, "Fail to convert utf-8 to string: {msg}"),
-            LibError::LaoDictionnary(msg) => write!(f, "Fail to load lao dictionnary: {msg}"),
+            LibError::ChineseDictionary(msg) => write!(f, "Fail to load chinese dinctionary: {msg}"),
+            LibError::LaoDictionnary(msg) => write!(f, "Fail to load lao dictionary: {msg}"),
             LibError::Puncutation(msg) => write!(f, "Unable to retrieve the punctuation: {msg}")
         }
     }

@@ -30,7 +30,7 @@ pub fn get_character_by_usage(content: impl AsRef<str>) -> Result<CharactersList
 #[cfg(feature = "chinese")]
 pub fn load_chinese_dictionary(version: Option<chinese::Version>) -> Result<CNDictionary, error::LibError> {
     let mut dictionary = CNDictionary::new(version)?;
-    dictionary.load();
+    dictionary.load()?;
 
     Ok(dictionary)
 }
