@@ -7,6 +7,8 @@ use crate::word::DetectWord;
 use crate::error::LibError;
 use crate::punctuation;
 
+mod wrapper;
+
 #[derive(Default)]
 pub struct Dictionary {
     dic: HashMap<String, Definition>,
@@ -31,10 +33,7 @@ impl Dictionary {
     pub fn new() -> Result<Self, LibError> {
         let p = punctuation::Puncutation::new()?;
         // preload the wordcut dictionnary 
-        let lao_dic_path = chamkho::lao_path();
-        let dic = chamkho::load_dict(lao_dic_path)
-            .map_err(|err| LibError::LaoDictionary(err.to_string()))?;
-
+        let dic = wrapper::load_laotian_words()?;
         let wordcut = chamkho::Wordcut::new(dic);
 
         Ok(Dictionary {

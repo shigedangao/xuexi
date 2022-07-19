@@ -50,8 +50,6 @@ impl Dictionary {
     }
 
     /// Create a new Dictionary from the cedict_ts.u8
-    /// @TODO it might be better to create a small CLI to convert the u8 into csv or other format...
-    /// This should speed up the loading of the dictionary
     pub fn load(&mut self) -> Result<(), LibError> {
         let mut dic = HashMap::new();
         let definition: &[u8] = include_bytes!("../../cedict.csv");
