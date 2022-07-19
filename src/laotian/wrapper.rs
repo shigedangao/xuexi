@@ -12,14 +12,12 @@ pub fn load_laotian_words() -> Result<Dict, LibError> {
     let reader = BufReader::new(lao_words);
     let mut definitions = Vec::new();
 
-    for line in reader.lines() {
-        if let Ok(l) = line {
-            if l.contains("#") {
-                continue;
-            }
-
-            definitions.push(l);
+    for line in reader.lines().flatten() {
+        if line.contains('#') {
+            continue;
         }
+
+        definitions.push(line);
     }
 
     let d: Vec<_> = definitions.iter().map(|d| d.deref()).collect();
