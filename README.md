@@ -1,4 +1,4 @@
-# Xuexie 學習 (WIP)
+# Xuexie 學習
 
 A library which parse a dictionary in order to return a list of most used word / character within a text or a sentence.
 
@@ -8,6 +8,7 @@ All of these dictionaries are available on the internet. Big thanks to them for 
 
 - Chinese by using the [cedict dictionnary](https://www.mdbg.net/chinese/dictionary?page=cedict)
 - Laotian dictionary provided by the [LaoNLP repository](https://github.com/wannaphong/LaoNLP/blob/af9bae55b7265c740855787960ba6c1a357063fd/laonlp/corpus/lao-eng-dictionary.csv). Note that it has been edited to remove the index
+- Lao words provided by [lao-dictionary repository](https://github.com/rober42539/lao-dictionary) and parsing provided by the [chamkho repository](https://github.com/veer66/chamkho)
 
 ## Example
 
