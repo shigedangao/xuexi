@@ -20,7 +20,7 @@ fn chinese_example() {
 
     assert_eq!(character, "熱");
     assert_eq!(definition.count, 2);
-    assert_eq!(definition.pronunciations.get(0).unwrap(), "re4");
+    assert_eq!(definition.pronunciations.get(0).unwrap(), "rè");
 
     println!("{:?}", definition);
 }

@@ -25,7 +25,7 @@ impl Default for Version {
 struct Chinese {
     traditional_chinese: String,
     simplified_chinese: String,
-    pinyin: String,
+    pinyin_accent: String,
     translations: String
 }
 
@@ -39,6 +39,10 @@ pub struct Dictionary {
 
 impl Dictionary {
     /// Create a new empty Dictionary
+    /// 
+    /// # Arguments
+    /// 
+    /// * `version` - Option<Version> (Simplified or Traditional chinese)
     pub fn new(version: Option<Version>) -> Result<Dictionary, LibError> {
         let p = punctuation::Puncutation::new()?;
 
@@ -73,7 +77,7 @@ impl Dictionary {
                 count: 0,
                 writing_method: record.traditional_chinese.to_owned(),
                 second_writing_method: Some(record.simplified_chinese.to_owned()),
-                pronunciations: vec![record.pinyin],
+                pronunciations: vec![record.pinyin_accent],
                 translations
             };
 
@@ -184,8 +188,8 @@ mod tests {
         let res = dictionary.get_list_detected_words("得").unwrap();
         let dei = res.get("得").unwrap();
 
-        assert_eq!(dei.pronunciations.get(0).unwrap(), "de2");
-        assert_eq!(dei.pronunciations.last().unwrap(), "dei3");
+        assert_eq!(dei.pronunciations.get(0).unwrap(), "dé");
+        assert_eq!(dei.pronunciations.last().unwrap(), "děi");
     }
 
     #[test]
