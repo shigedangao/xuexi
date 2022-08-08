@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Deserialize};
 use crate::ordering::Ops;
@@ -6,7 +6,7 @@ use crate::error::LibError;
 use crate::export;
 
 // Custom type
-pub type DefinitionList = HashMap<String, Definition>;
+pub type DefinitionList = BTreeMap<String, Definition>;
 
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct Definition {

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use serde::Deserialize;
-use crate::definition::{Definition, InsertOrMerge};
+use crate::definition::{Definition, DefinitionList, InsertOrMerge};
 use crate::word::DetectWord;
 use crate::clean::Clean;
 use crate::error::LibError;
@@ -31,7 +31,7 @@ struct Chinese {
 
 #[derive(Debug, Clone, Default)]
 pub struct Dictionary {
-    dic: HashMap<String, Definition>,
+    dic: DefinitionList,
     punctuation: Vec<String>,
     version: Version
 }
@@ -47,7 +47,7 @@ impl Dictionary {
         let p = punctuation::Puncutation::new()?;
 
         Ok(Dictionary {
-            dic: HashMap::default(),
+            dic: BTreeMap::default(),
             punctuation: p.chinese,
             version: version.unwrap_or_default()
         })
@@ -55,7 +55,7 @@ impl Dictionary {
 
     /// Create a new Dictionary from the cedict_ts.u8
     pub fn load(&mut self) -> Result<(), LibError> {
-        let mut dic = HashMap::new();
+        let mut dic = BTreeMap::new();
         let definition: &[u8] = include_bytes!("../../cedict.csv");
         
         let mut reader = csv::Reader::from_reader(definition);
@@ -92,7 +92,7 @@ impl Dictionary {
         Ok(())
     }
 
-    fn decorate_insert_map_word(&self, map: &mut HashMap<String, Definition>, item: &Option<Definition>) {
+    fn decorate_insert_map_word(&self, map: &mut DefinitionList, item: &Option<Definition>) {
         if let Some(def) = item {
             match self.version {
                 Version::Simplified => self.insert_map_word(map, item, def.second_writing_method.as_ref().unwrap()),
@@ -105,12 +105,12 @@ impl Dictionary {
 impl Clean for Dictionary {}
 
 impl DetectWord for Dictionary {
-    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>> {
+    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<DefinitionList> {
         let mut start_cursor = 0;
         let mut end_cursor = 1;
         // this is to avoid a case where we can do an infinite loop on a single character
         let mut unmatched = 0;
-        let mut dictionary = HashMap::new();
+        let mut dictionary = BTreeMap::new();
         // split the sentence into a vector of characters
         let cleaned_sentence = self.remove_punctuation_from_sentence(sentence.as_ref(), &self.punctuation);
         let characters: Vec<char> = cleaned_sentence.chars().collect();
