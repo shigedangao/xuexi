@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use crate::definition::Definition;
+use crate::definition::{Definition, DefinitionList};
 use crate::clean::Clean;
 
 pub trait DetectWord: Clean {
@@ -9,7 +8,7 @@ pub trait DetectWord: Clean {
     /// 
     /// * `map` - A mutable reference to a HashMap
     /// * `item` - A Definition item which we'll be insert
-    fn insert_map_word(&self, map: &mut HashMap<String, Definition>, item: &Option<Definition>, key: &str) {
+    fn insert_map_word(&self, map: &mut DefinitionList, item: &Option<Definition>, key: &str) {
         if item.is_none() {
             return;
         }
@@ -29,5 +28,5 @@ pub trait DetectWord: Clean {
     /// # Arguments
     /// 
     /// * `sentence` - impl AsRef<str> anything that can be converted to a &str
-    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>>;
+    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<DefinitionList>;
 }

@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use serde::Deserialize;
 use chamkho::Wordcut;
-use crate::definition::{Definition, InsertOrMerge};
+use crate::definition::{Definition, DefinitionList, InsertOrMerge};
 use crate::clean::Clean;
 use crate::word::DetectWord;
 use crate::error::LibError;
@@ -11,7 +11,7 @@ mod wrapper;
 
 #[derive(Default)]
 pub struct Dictionary {
-    dic: HashMap<String, Definition>,
+    dic: DefinitionList,
     parser: Option<Wordcut>,
     punctuation: Vec<String>
 }
@@ -37,7 +37,7 @@ impl Dictionary {
         let wordcut = chamkho::Wordcut::new(dic);
 
         Ok(Dictionary {
-            dic: HashMap::new(),
+            dic: BTreeMap::new(),
             parser: Some(wordcut),
             punctuation: p.laotian
         })
@@ -53,7 +53,7 @@ impl Dictionary {
     /// 
     /// * `&mut self` - Self
     pub fn load(&mut self) {
-        let mut dic = HashMap::new();
+        let mut dic = BTreeMap::new();
         let resource: &[u8] = include_bytes!("../../lao-eng-dictionary.csv");
 
         // reading the csv
@@ -84,8 +84,8 @@ impl Dictionary {
 impl Clean for Dictionary {}
 
 impl DetectWord for Dictionary {
-    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<HashMap<String, Definition>> {
-        let mut matched = HashMap::new();
+    fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<DefinitionList> {
+        let mut matched = BTreeMap::new();
         // clean the string first 
         let cleaned_sentence = self.remove_punctuation_from_sentence(sentence.as_ref(), &self.punctuation);
         
