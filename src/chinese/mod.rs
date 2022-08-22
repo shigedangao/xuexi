@@ -9,7 +9,7 @@ use crate::punctuation;
 // Constant
 const SLASH_CHARACTER: char = '/';
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Version {
     Traditional,
     Simplified
@@ -92,6 +92,12 @@ impl Dictionary {
         Ok(())
     }
 
+    /// Insert the definition based on traditional or simplified chinese
+    /// 
+    /// # Arguments
+    /// 
+    /// * `map` - &mut DefinitionList
+    /// * `item` - &Option<Definition>
     fn decorate_insert_map_word(&self, map: &mut DefinitionList, item: &Option<Definition>) {
         if let Some(def) = item {
             match self.version {
