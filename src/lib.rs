@@ -10,9 +10,9 @@ pub mod chinese;
 pub mod laotian;
 
 use character::{Characters, CharactersList};
-//#[cfg(feature = "chinese")]
+#[cfg(feature = "chinese")]
 use chinese::Dictionary as CNDictionary;
-//#[cfg(feature = "laotian")]
+#[cfg(feature = "laotian")]
 use laotian::Dictionary as LaoDictionary;
 
 /// Get a list of characters by it's usage
@@ -27,7 +27,7 @@ pub fn get_character_by_usage(content: impl AsRef<str>) -> Result<CharactersList
 }
 
 /// Load a chinese dictionnary which allows you to get a list of chinese definitions
-//#[cfg(feature = "chinese")]
+#[cfg(feature = "chinese")]
 pub fn load_chinese_dictionary(version: Option<chinese::Version>) -> Result<CNDictionary, error::LibError> {
     let mut dictionary = CNDictionary::new(version)?;
     dictionary.load()?;
@@ -36,7 +36,7 @@ pub fn load_chinese_dictionary(version: Option<chinese::Version>) -> Result<CNDi
 }
 
 /// Load a laotian dictionnary which allows you to get a list of laotian word definitions
-//#[cfg(feature = "laotian")]
+#[cfg(feature = "laotian")]
 pub fn load_laotian_dictionary() -> Result<LaoDictionary, error::LibError> {
     let mut dictionary = LaoDictionary::new()?;
     dictionary.load();
