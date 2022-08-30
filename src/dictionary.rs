@@ -9,7 +9,7 @@ pub struct NoLang;
 // State for Chinese language
 pub struct Chinese;
 
-// State for 
+// State for Lao language
 pub struct Laotian;
 
 pub enum Options {
