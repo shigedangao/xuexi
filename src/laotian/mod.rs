@@ -1,20 +1,13 @@
 use std::collections::BTreeMap;
 use serde::Deserialize;
-use chamkho::Wordcut;
 use crate::definition::{Definition, DefinitionList, InsertOrMerge};
 use crate::clean::Clean;
 use crate::word::DetectWord;
 use crate::error::LibError;
 use crate::punctuation;
+use crate::dictionary::{Dictionary, Laotian, Options};
 
-mod wrapper;
-
-#[derive(Default)]
-pub struct Dictionary {
-    dic: DefinitionList,
-    parser: Option<Wordcut>,
-    punctuation: Vec<String>
-}
+pub mod wrapper;
 
 /// Used for parsing the dictionnary
 #[derive(Debug, Clone, Deserialize)]
@@ -27,19 +20,20 @@ pub struct JPEnLaoItem {
     english: String
 }
 
-impl Dictionary {
+impl Dictionary<Laotian> {
     /// Create a new dictionnary and load the chamkho parser which
     /// is used to found the word in a laotian sentence
-    pub fn new() -> Result<Self, LibError> {
+    pub fn new() -> Result<Dictionary<Laotian>, LibError> {
         let p = punctuation::Puncutation::new()?;
         // preload the wordcut dictionnary 
         let dic = wrapper::load_laotian_words()?;
         let wordcut = chamkho::Wordcut::new(dic);
 
         Ok(Dictionary {
+            lang: std::marker::PhantomData::<Laotian>,
             dic: BTreeMap::new(),
-            parser: Some(wordcut),
-            punctuation: p.laotian
+            punctuation: p.laotian,
+            options: Options::Laotian(Box::new(wordcut))
         })
     }
 
@@ -81,16 +75,18 @@ impl Dictionary {
     } 
 }
 
-impl Clean for Dictionary {}
-
-impl DetectWord for Dictionary {
+impl DetectWord for Dictionary<Laotian> {
     fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<DefinitionList> {
         let mut matched = BTreeMap::new();
         // clean the string first 
         let cleaned_sentence = self.remove_punctuation_from_sentence(sentence.as_ref(), &self.punctuation);
         
         // get a list of laotian word from the sentence
-        let parser = self.parser.as_ref()?;
+        let parser = match &self.options {
+            Options::Laotian(parser) => parser,
+            _ => return None
+        };
+
         let words = parser.segment_into_strings(&cleaned_sentence);
         if words.is_empty() {
             return None;
@@ -117,7 +113,7 @@ mod tests {
 
     #[test]
     fn expect_to_load_lao_dictionnary() {
-        let mut dictionnary = Dictionary::new().unwrap();
+        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
         dictionnary.load();
 
         assert!(!dictionnary.dic.is_empty());
@@ -125,7 +121,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_item() {
-        let mut dictionnary = Dictionary::new().unwrap();
+        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
         dictionnary.load();
 
         let item = dictionnary.dic.get("ຮັກ");
@@ -139,7 +135,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_list_word_for_sentence() {
-        let mut dictionnary = Dictionary::new().unwrap();
+        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
         dictionnary.load();
 
         let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ");
@@ -158,7 +154,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_list_of_word_by_order() {
-        let mut dictionnary = Dictionary::new().unwrap();
+        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
         dictionnary.load();
 
         let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງລູກຢາກກິນເຂົ້າຫນຽວ");
@@ -173,7 +169,7 @@ mod tests {
 
     #[test]
     fn expect_to_not_match_anything() {
-        let mut dictionnary = Dictionary::new().unwrap();
+        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
         dictionnary.load();
 
         let words = dictionnary.get_list_detected_words("hello");

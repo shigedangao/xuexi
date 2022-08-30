@@ -1,6 +1,11 @@
 use std::collections::BTreeMap;
 use serde::Deserialize;
-use crate::definition::{Definition, DefinitionList, InsertOrMerge};
+use crate::definition::{
+    Definition,
+    DefinitionList,
+    InsertOrMerge
+};
+use crate::dictionary::{Dictionary, Chinese, Options};
 use crate::word::DetectWord;
 use crate::clean::Clean;
 use crate::error::LibError;
@@ -16,40 +21,31 @@ pub enum Version {
 }
 
 impl Default for Version {
-    fn default() -> Self {
-        Version::Traditional
-    }
+    fn default() -> Self { Version::Traditional }
 }
 
 #[derive(Debug, Deserialize)]
-struct Chinese {
+struct Cedict {
     traditional_chinese: String,
     simplified_chinese: String,
     pinyin_accent: String,
     translations: String
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct Dictionary {
-    dic: DefinitionList,
-    punctuation: Vec<String>,
-    version: Version
-}
-
-
-impl Dictionary {
+impl Dictionary<Chinese> {
     /// Create a new empty Dictionary
     /// 
     /// # Arguments
     /// 
     /// * `version` - Option<Version> (Simplified or Traditional chinese)
-    pub fn new(version: Option<Version>) -> Result<Dictionary, LibError> {
+    pub fn new(version: Version) -> Result<Dictionary<Chinese>, LibError> {
         let p = punctuation::Puncutation::new()?;
 
         Ok(Dictionary {
+            lang: std::marker::PhantomData::<Chinese>,
             dic: BTreeMap::default(),
             punctuation: p.chinese,
-            version: version.unwrap_or_default()
+            options: Options::Chinese(version)
         })
     }
 
@@ -60,7 +56,7 @@ impl Dictionary {
         
         let mut reader = csv::Reader::from_reader(definition);
         for res in reader.deserialize() {
-            let record: Chinese = res?;
+            let record: Cedict = res?;
 
             let translations: Vec<String> = record.translations
                 .split(SLASH_CHARACTER)
@@ -81,10 +77,12 @@ impl Dictionary {
                 translations
             };
 
-            match self.version {
-                Version::Simplified => dic.insert_or_merge(record.simplified_chinese, item),
-                Version::Traditional =>  dic.insert_or_merge(record.traditional_chinese, item)
-            };
+            if let Options::Chinese(v) = &self.options {
+                match v {
+                    Version::Simplified => dic.insert_or_merge(record.simplified_chinese, item),
+                    Version::Traditional =>  dic.insert_or_merge(record.traditional_chinese, item)
+                };
+            }
         }
 
         self.dic = dic;
@@ -100,17 +98,17 @@ impl Dictionary {
     /// * `item` - &Option<Definition>
     fn decorate_insert_map_word(&self, map: &mut DefinitionList, item: &Option<Definition>) {
         if let Some(def) = item {
-            match self.version {
-                Version::Simplified => self.insert_map_word(map, item, def.second_writing_method.as_ref().unwrap()),
-                Version::Traditional => self.insert_map_word(map, item, &def.writing_method)
+            if let Options::Chinese(v) = &self.options {
+                match v {
+                    Version::Simplified => self.insert_map_word(map, item, def.second_writing_method.as_ref().unwrap()),
+                    Version::Traditional => self.insert_map_word(map, item, &def.writing_method)
+                }
             }
         }
     }
 }
 
-impl Clean for Dictionary {}
-
-impl DetectWord for Dictionary {
+impl DetectWord for Dictionary<Chinese> {
     fn get_list_detected_words(&self, sentence: impl AsRef<str>) -> Option<DefinitionList> {
         let mut start_cursor = 0;
         let mut end_cursor = 1;
@@ -180,7 +178,7 @@ mod tests {
 
     #[test]
     fn expect_to_load_dictionary() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         assert!(!dictionary.dic.is_empty());
@@ -188,7 +186,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_same_char_and_different_pronounciation() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let res = dictionary.get_list_detected_words("得").unwrap();
@@ -200,7 +198,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_characters() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("你好你好").unwrap();
@@ -215,7 +213,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_ordered_characters() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("去年我去過日本看我好朋友日本很好看").unwrap();
@@ -234,7 +232,7 @@ mod tests {
 
     #[test]
     fn expect_to_generate_list_with_for_multiple_sentences() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("今天我日本朋友吃拉麵. 日本拉麵看起來好吃! 吃拉麵讓我高興").unwrap();
@@ -254,7 +252,7 @@ mod tests {
 
     #[test]
     fn expect_to_generate_list_with_punctuation() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("今天天氣好嗎 ? 天氣非常好. ").unwrap();
@@ -268,7 +266,7 @@ mod tests {
 
     #[test]
     fn expect_to_generate_csv() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("我昨天感冒了").unwrap();
@@ -279,7 +277,7 @@ mod tests {
 
     #[test]
     fn expect_to_return_none_when_no_chinese_word() {
-        let mut dictionary = super::Dictionary::new(None).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("hello");
@@ -288,7 +286,7 @@ mod tests {
     
     #[test]
     fn expect_to_load_simplified_chinese() {
-        let mut dictionary = super::Dictionary::new(Some(Version::Simplified)).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Simplified).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("你喜欢开车吗?");
