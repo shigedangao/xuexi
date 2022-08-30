@@ -1,6 +1,9 @@
 use std::thread;
-use xuexi::chinese::Dictionary as CnDictionary;
-use xuexi::laotian::Dictionary as LaoDictionary;
+use xuexi::dictionary::{
+    Dictionary,
+    Chinese,
+    Laotian
+};
 use xuexi::ordering::Ops;
 use xuexi::word::DetectWord;
 
@@ -12,8 +15,8 @@ fn main() {
 }
 
 // Load dictionary in thread to make the example quicker
-fn load_dictionary() -> (CnDictionary, LaoDictionary) {
-    let cn_handle = thread::spawn(|| xuexi::load_chinese_dictionary(None).unwrap());
+fn load_dictionary() -> (Dictionary<Chinese>, Dictionary<Laotian>) {
+    let cn_handle = thread::spawn(|| xuexi::load_chinese_dictionary(xuexi::chinese::Version::Traditional).unwrap());
     let la_handle = thread::spawn(|| xuexi::load_laotian_dictionary().unwrap());
 
     let (cn, la) = (cn_handle.join(), la_handle.join());
@@ -21,7 +24,7 @@ fn load_dictionary() -> (CnDictionary, LaoDictionary) {
     (cn.unwrap(), la.unwrap())
 }
 
-fn chinese_example(chinese: &CnDictionary) {
+fn chinese_example(chinese: &Dictionary<Chinese>) {
     let sentence = "今天天氣很熱非常熱";
 
     // hashamp
@@ -39,7 +42,7 @@ fn chinese_example(chinese: &CnDictionary) {
     println!("{:?}", definition);
 }
 
-fn lao_example(lao: &LaoDictionary) {
+fn lao_example(lao: &Dictionary<Laotian>) {
     let sentence = "ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ";
 
     let list = lao.get_list_detected_words(sentence).unwrap();
