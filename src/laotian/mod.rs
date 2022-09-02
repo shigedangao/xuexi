@@ -161,10 +161,10 @@ mod tests {
         assert!(words.is_some());
 
         let ordered_words = words.unwrap().get_ordered_characters();
-        let (word, item) = ordered_words.get(0).unwrap();
+        let item = ordered_words.get(0).unwrap();
         
         assert_eq!(item.count, 2);
-        assert_eq!(word, "ລູກ");
+        assert_eq!(item.writing_method, "ລູກ");
     }
 
     #[test]
