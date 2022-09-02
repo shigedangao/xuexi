@@ -7,12 +7,14 @@ pub mod word;
 pub mod error;
 pub mod definition;
 pub mod ordering;
+#[cfg(feature = "chinese")]
 pub mod chinese;
+#[cfg(feature = "laotian")]
 pub mod laotian;
 
 use character::{Characters, CharactersList};
 #[cfg(feature = "chinese")]
-use dictionary::Chinese;
+use dictionary::{ChineseVersion, Chinese};
 #[cfg(feature = "laotian")]
 use dictionary::Laotian;
 
@@ -29,7 +31,7 @@ pub fn get_character_by_usage(content: impl AsRef<str>) -> Result<CharactersList
 
 /// Load a chinese dictionnary which allows you to get a list of chinese definitions
 #[cfg(feature = "chinese")]
-pub fn load_chinese_dictionary(version: chinese::Version) -> Result<dictionary::Dictionary<Chinese>, error::LibError> {
+pub fn load_chinese_dictionary(version: ChineseVersion) -> Result<dictionary::Dictionary<Chinese>, error::LibError> {
     let mut dictionary = dictionary::Dictionary::<Chinese>::new(version)?;
     dictionary.load()?;
 

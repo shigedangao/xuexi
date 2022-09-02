@@ -1,7 +1,6 @@
 use chamkho::Wordcut;
 use crate::clean::Clean;
 use crate::definition::DefinitionList;
-use crate::chinese::Version;
 
 // Default implementation
 pub struct NoLang;
@@ -12,9 +11,19 @@ pub struct Chinese;
 // State for Lao language
 pub struct Laotian;
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum ChineseVersion {
+    Traditional,
+    Simplified
+}
+
+impl Default for ChineseVersion {
+    fn default() -> Self { ChineseVersion::Traditional }
+}
+
 pub enum Options {
     TraditionalChinese,
-    Chinese(Version),
+    Chinese(ChineseVersion),
     Laotian(Box<Wordcut>)
 }
 

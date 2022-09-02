@@ -51,10 +51,14 @@ impl Definition {
     }
 }
 
-impl Ops<(String, Definition)> for DefinitionList {
-    fn get_ordered_characters(&self) -> Vec<(String, Definition)> {
-        let mut vec: Vec<_> = Vec::from_iter(self.clone().into_iter());
-        vec.sort_by(|(_, a), (_, b)| b.count.cmp(&a.count));
+impl Ops<Definition> for DefinitionList {
+    fn get_ordered_characters(&self) -> Vec<Definition> {
+        let mut vec: Vec<_> = Vec::from_iter(self.clone().into_iter())
+            .into_iter()
+            .map(|(_, v)| v)
+            .collect::<Vec<Definition>>();
+
+        vec.sort_by(|a, b| b.count.cmp(&a.count));
 
         vec
     }
@@ -62,11 +66,8 @@ impl Ops<(String, Definition)> for DefinitionList {
 
 impl export::Export for DefinitionList {
     fn to_csv(&self) -> Result<String, LibError> {
-        let ordered = self.get_ordered_characters();
+        let definitions = self.get_ordered_characters();
         // get the list of definition
-        let definitions: Vec<Definition> = ordered.into_iter()
-            .map(|(_, d)| d)
-            .collect();
 
         export::export_to_csv(definitions)
     }

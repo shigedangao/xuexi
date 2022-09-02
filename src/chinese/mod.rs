@@ -5,7 +5,12 @@ use crate::definition::{
     DefinitionList,
     InsertOrMerge
 };
-use crate::dictionary::{Dictionary, Chinese, Options};
+use crate::dictionary::{
+    Dictionary,
+    Chinese,
+    ChineseVersion,
+    Options
+};
 use crate::word::DetectWord;
 use crate::clean::Clean;
 use crate::error::LibError;
@@ -13,16 +18,6 @@ use crate::punctuation;
 
 // Constant
 const SLASH_CHARACTER: char = '/';
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub enum Version {
-    Traditional,
-    Simplified
-}
-
-impl Default for Version {
-    fn default() -> Self { Version::Traditional }
-}
 
 #[derive(Debug, Deserialize)]
 struct Cedict {
@@ -37,8 +32,8 @@ impl Dictionary<Chinese> {
     /// 
     /// # Arguments
     /// 
-    /// * `version` - Option<Version> (Simplified or Traditional chinese)
-    pub fn new(version: Version) -> Result<Dictionary<Chinese>, LibError> {
+    /// * `version` - Option<ChineseVersion> (Simplified or Traditional chinese)
+    pub fn new(version: ChineseVersion) -> Result<Dictionary<Chinese>, LibError> {
         let p = punctuation::Puncutation::new()?;
 
         Ok(Dictionary {
@@ -79,8 +74,8 @@ impl Dictionary<Chinese> {
 
             if let Options::Chinese(v) = &self.options {
                 match v {
-                    Version::Simplified => dic.insert_or_merge(record.simplified_chinese, item),
-                    Version::Traditional =>  dic.insert_or_merge(record.traditional_chinese, item)
+                    ChineseVersion::Simplified => dic.insert_or_merge(record.simplified_chinese, item),
+                    ChineseVersion::Traditional =>  dic.insert_or_merge(record.traditional_chinese, item)
                 };
             }
         }
@@ -100,8 +95,8 @@ impl Dictionary<Chinese> {
         if let Some(def) = item {
             if let Options::Chinese(v) = &self.options {
                 match v {
-                    Version::Simplified => self.insert_map_word(map, item, def.second_writing_method.as_ref().unwrap()),
-                    Version::Traditional => self.insert_map_word(map, item, &def.writing_method)
+                    ChineseVersion::Simplified => self.insert_map_word(map, item, def.second_writing_method.as_ref().unwrap()),
+                    ChineseVersion::Traditional => self.insert_map_word(map, item, &def.writing_method)
                 }
             }
         }
@@ -178,7 +173,7 @@ mod tests {
 
     #[test]
     fn expect_to_load_dictionary() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         assert!(!dictionary.dic.is_empty());
@@ -186,7 +181,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_same_char_and_different_pronounciation() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let res = dictionary.get_list_detected_words("得").unwrap();
@@ -198,7 +193,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_characters() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("你好你好").unwrap();
@@ -213,7 +208,7 @@ mod tests {
 
     #[test]
     fn expect_to_get_ordered_characters() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("去年我去過日本看我好朋友日本很好看").unwrap();
@@ -223,16 +218,16 @@ mod tests {
         assert_eq!(riben.writing_method, "日本");
 
         let vec = words.get_ordered_characters();
-        let (f, item) = vec.first().unwrap();
+        let item = vec.first().unwrap();
 
-        assert_eq!(f, "日本");
+        assert_eq!(item.writing_method, "日本");
         assert_eq!(item.count, 2);
         assert_eq!(item.writing_method, "日本");
     }
 
     #[test]
     fn expect_to_generate_list_with_for_multiple_sentences() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("今天我日本朋友吃拉麵. 日本拉麵看起來好吃! 吃拉麵讓我高興").unwrap();
@@ -252,7 +247,7 @@ mod tests {
 
     #[test]
     fn expect_to_generate_list_with_punctuation() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("今天天氣好嗎 ? 天氣非常好. ").unwrap();
@@ -266,7 +261,7 @@ mod tests {
 
     #[test]
     fn expect_to_generate_csv() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("我昨天感冒了").unwrap();
@@ -277,7 +272,7 @@ mod tests {
 
     #[test]
     fn expect_to_return_none_when_no_chinese_word() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Traditional).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Traditional).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("hello");
@@ -286,7 +281,7 @@ mod tests {
     
     #[test]
     fn expect_to_load_simplified_chinese() {
-        let mut dictionary = super::Dictionary::<Chinese>::new(Version::Simplified).unwrap();
+        let mut dictionary = super::Dictionary::<Chinese>::new(ChineseVersion::Simplified).unwrap();
         dictionary.load().unwrap();
 
         let words = dictionary.get_list_detected_words("你喜欢开车吗?");
