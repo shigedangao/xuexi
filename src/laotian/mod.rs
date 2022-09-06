@@ -1,11 +1,20 @@
 use std::collections::BTreeMap;
 use serde::Deserialize;
-use crate::definition::{Definition, DefinitionList, InsertOrMerge};
+use crate::definition::{
+    Definition,
+    DefinitionList,
+    InsertOrMerge
+};
 use crate::clean::Clean;
 use crate::word::DetectWord;
 use crate::error::LibError;
 use crate::punctuation;
-use crate::dictionary::{Dictionary, Laotian, Options};
+use crate::dictionary::{
+    Dictionary,
+    DictionaryLoader,
+    Laotian,
+    Options
+};
 
 pub mod wrapper;
 
@@ -20,10 +29,10 @@ pub struct JPEnLaoItem {
     english: String
 }
 
-impl Dictionary<Laotian> {
+impl DictionaryLoader<Laotian> for Dictionary<Laotian> {
     /// Create a new dictionnary and load the chamkho parser which
     /// is used to found the word in a laotian sentence
-    pub fn new() -> Result<Dictionary<Laotian>, LibError> {
+    fn new_lang() -> Result<Dictionary<Laotian>, LibError> {
         let p = punctuation::Puncutation::new()?;
         // preload the wordcut dictionnary 
         let dic = wrapper::load_laotian_words()?;
@@ -46,7 +55,7 @@ impl Dictionary<Laotian> {
     /// # Arguments
     /// 
     /// * `&mut self` - Self
-    pub fn load(&mut self) {
+    fn load(&mut self) -> Result<(), LibError> {
         let mut dic = BTreeMap::new();
         let resource: &[u8] = include_bytes!("../../lao-eng-dictionary.csv");
 
@@ -72,6 +81,8 @@ impl Dictionary<Laotian> {
         }
 
         self.dic = dic;
+
+        Ok(())
     } 
 }
 
@@ -113,16 +124,16 @@ mod tests {
 
     #[test]
     fn expect_to_load_lao_dictionnary() {
-        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
-        dictionnary.load();
+        let mut dictionnary = Dictionary::<Laotian>::new_lang().unwrap();
+        dictionnary.load().unwrap();
 
         assert!(!dictionnary.dic.is_empty());
     }
 
     #[test]
     fn expect_to_get_item() {
-        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
-        dictionnary.load();
+        let mut dictionnary = Dictionary::<Laotian>::new_lang().unwrap();
+        dictionnary.load().unwrap();
 
         let item = dictionnary.dic.get("ຮັກ");
         assert!(item.is_some());
@@ -135,8 +146,8 @@ mod tests {
 
     #[test]
     fn expect_to_get_list_word_for_sentence() {
-        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
-        dictionnary.load();
+        let mut dictionnary = Dictionary::<Laotian>::new_lang().unwrap();
+        dictionnary.load().unwrap();
 
         let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ");
         assert!(words.is_some());
@@ -154,8 +165,8 @@ mod tests {
 
     #[test]
     fn expect_to_get_list_of_word_by_order() {
-        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
-        dictionnary.load();
+        let mut dictionnary = Dictionary::<Laotian>::new_lang().unwrap();
+        dictionnary.load().unwrap();
 
         let words = dictionnary.get_list_detected_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງລູກຢາກກິນເຂົ້າຫນຽວ");
         assert!(words.is_some());
@@ -169,8 +180,8 @@ mod tests {
 
     #[test]
     fn expect_to_not_match_anything() {
-        let mut dictionnary = Dictionary::<Laotian>::new().unwrap();
-        dictionnary.load();
+        let mut dictionnary = Dictionary::<Laotian>::new_lang().unwrap();
+        dictionnary.load().unwrap();
 
         let words = dictionnary.get_list_detected_words("hello");
         assert!(words.is_none());        

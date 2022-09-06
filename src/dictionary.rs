@@ -1,6 +1,7 @@
 use chamkho::Wordcut;
 use crate::clean::Clean;
 use crate::definition::DefinitionList;
+use crate::error::LibError;
 
 // Default implementation
 pub struct NoLang;
@@ -22,7 +23,6 @@ impl Default for ChineseVersion {
 }
 
 pub enum Options {
-    TraditionalChinese,
     Chinese(ChineseVersion),
     Laotian(Box<Wordcut>)
 }
@@ -39,6 +39,13 @@ pub struct Dictionary<Lang = NoLang> {
     pub dic: DefinitionList,
     pub punctuation: Vec<String>,
     pub options: Options
+}
+
+/// Dictionary Loader are a set of common method that each dictionary of 
+/// lang T need to implement
+pub trait DictionaryLoader<T> {
+    fn new_lang() -> Result<Dictionary<T>, LibError>;
+    fn load(&mut self) -> Result<(), LibError>;
 }
 
 impl<L> Clean for Dictionary<L> {}
