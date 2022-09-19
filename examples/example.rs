@@ -29,7 +29,7 @@ fn chinese_example(chinese: &Dictionary<Chinese>) {
     let sentence = "今天天氣很熱非常熱";
 
     // hashamp
-    let list = chinese.get_list_detected_words(sentence).unwrap();
+    let list = xuexi::search_in_dictionary(chinese, sentence).unwrap();
     
     // we can get the list ordered as a vector
     let vec: Vec<_> = list.get_ordered_characters();

@@ -13,12 +13,14 @@ pub mod chinese;
 pub mod laotian;
 
 use character::{Characters, CharactersList};
+use definition::DefinitionList;
 #[cfg(feature = "chinese")]
 use dictionary::{ChineseVersion, Chinese};
 #[cfg(feature = "laotian")]
 use dictionary::Laotian;
 #[allow(unused_imports)]
 use dictionary::DictionaryLoader;
+use word::DetectWord;
 
 /// Get a list of characters by it's usage
 /// 
@@ -48,4 +50,15 @@ pub fn load_laotian_dictionary() -> Result<dictionary::Dictionary<Laotian>, erro
     dictionary.load()?;
 
     Ok(dictionary)
+}
+
+/// Helper method to search in a dictionary if you don't want to import the
+/// DetectWord trait
+/// 
+/// # Arguments
+/// 
+/// * `dictionary` - &T
+/// * `sentence` - &str
+pub fn search_in_dictionary<T>(dictionary: &T, sentence: &str) -> Option<DefinitionList> where T: DetectWord {
+    dictionary.get_list_detected_words(sentence)
 }

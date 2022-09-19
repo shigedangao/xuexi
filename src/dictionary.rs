@@ -32,8 +32,8 @@ pub enum Options {
 /// 
 /// # Examples
 /// 
-/// Dictionary::<Chinese>::new(Version::TraditionalChinese) // Load the chinese dictionary and it's associated methods.
-/// Dictionar::<Laotian>::new() // Load the laotian dictionary and it's associated methods.
+/// - Dictionary<Chinese>::new(Version::TraditionalChinese) // Load the chinese dictionary and it's associated methods.
+/// - Dictionar<Laotian>::new() // Load the laotian dictionary and it's associated methods.
 pub struct Dictionary<Lang = NoLang> {
     pub lang: std::marker::PhantomData<Lang>,
     pub dic: DefinitionList,
