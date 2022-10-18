@@ -1,6 +1,6 @@
-mod character;
 mod clean;
 mod punctuation;
+pub mod character;
 pub mod dictionary;
 pub mod export;
 pub mod word;
@@ -28,9 +28,9 @@ use word::DetectWord;
 /// 
 /// * `&str` - A string content
 pub fn get_character_by_usage(content: impl AsRef<str>) -> Result<CharactersList, error::LibError> {
-    let handler = Characters::new(content.as_ref())?;
+    let handler = Characters::new()?;
     
-    Ok(handler.generate_characters_list())
+    Ok(handler.generate_characters_list(content.as_ref()))
 }
 
 /// Load a chinese dictionnary which allows you to get a list of chinese definitions
