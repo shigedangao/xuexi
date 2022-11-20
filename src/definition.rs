@@ -96,6 +96,7 @@ impl Serialize for Definition {
         s.serialize_field("pronounciation", &self.pronunciations.join(","))?;
         s.serialize_field("translation", &self.translations.join(","))?;
         s.serialize_field("count", &self.count)?;
+        s.serialize_field("level", &self.level)?;
 
         s.end()
     }
