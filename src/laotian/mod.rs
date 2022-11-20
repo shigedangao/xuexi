@@ -74,7 +74,8 @@ impl DictionaryLoader<Laotian> for Dictionary<Laotian> {
                 second_writing_method: None,
                 pronunciations: vec![record.phonetic.trim().to_string()],
                 translations: vec![record.english.trim().to_string()],
-                count: 0
+                count: 0,
+                level: None
             };
 
             dic.insert_or_merge(key, def);

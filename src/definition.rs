@@ -14,7 +14,8 @@ pub struct Definition {
     pub second_writing_method: Option<String>,
     pub pronunciations: Vec<String>,
     pub translations: Vec<String>,
-    pub count: i64
+    pub count: i64,
+    pub level: Option<String>
 }
 
 /// Use to merge two definitions which has the same key.

@@ -25,7 +25,8 @@ struct Cedict {
     traditional_chinese: String,
     simplified_chinese: String,
     pinyin_accent: String,
-    translations: String
+    translations: String,
+    level: Option<String>
 }
 
 impl DictionaryLoader<Chinese> for Dictionary<Chinese> {
@@ -52,13 +53,7 @@ impl DictionaryLoader<Chinese> for Dictionary<Chinese> {
 
             let translations: Vec<String> = record.translations
                 .split(SLASH_CHARACTER)
-                .filter_map(|v| {
-                    if !v.is_empty() {
-                        return Some(v.to_string())
-                    }
-
-                    None
-                })
+                .filter_map(|v| v.is_empty().then_some(v.to_string()))
                 .collect();
 
             let item = Definition {
@@ -66,7 +61,8 @@ impl DictionaryLoader<Chinese> for Dictionary<Chinese> {
                 writing_method: record.traditional_chinese.to_owned(),
                 second_writing_method: Some(record.simplified_chinese.to_owned()),
                 pronunciations: vec![record.pinyin_accent],
-                translations
+                translations,
+                level: record.level
             };
 
             if let Options::Chinese(v) = &self.options {
@@ -265,6 +261,7 @@ mod tests {
 
         let ma = words.get("嗎").unwrap();
         assert_eq!(ma.count, 1);
+        assert_eq!(ma.level.as_ref().unwrap(), "HSK1");
     }
 
     #[test]

@@ -19,7 +19,7 @@ struct CharacterCount {
 // Custom type to handle Map for character
 pub type CharactersList = HashMap<char, i64>;
 
-impl<'a> Characters {
+impl Characters {
     /// Create a new Characters struct with the content that needs to be parsed
     /// 
     /// # Arguments
