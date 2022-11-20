@@ -53,7 +53,7 @@ impl DictionaryLoader<Chinese> for Dictionary<Chinese> {
 
             let translations: Vec<String> = record.translations
                 .split(SLASH_CHARACTER)
-                .filter_map(|v| v.is_empty().then_some(v.to_string()))
+                .filter_map(|v| (!v.is_empty()).then_some(v.to_string()))
                 .collect();
 
             let item = Definition {
