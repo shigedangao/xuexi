@@ -1,42 +1,46 @@
 use std::string::FromUtf8Error;
 
 #[derive(Debug)]
-pub enum LibError {
+pub enum DictionaryError {
     Serialize(String),
     Utf8(String),
     ChineseDictionary(String),
     LaoDictionary(String),
-    Puncutation(String)
+    Puncutation(String),
 }
 
-impl std::fmt::Display for LibError {
+impl std::fmt::Display for DictionaryError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            LibError::Serialize(msg) => write!(f, "Fail to serialize due to: {msg}"),
-            LibError::Utf8(msg) => write!(f, "Fail to convert utf-8 to string: {msg}"),
-            LibError::ChineseDictionary(msg) => write!(f, "Fail to load chinese dinctionary: {msg}"),
-            LibError::LaoDictionary(msg) => write!(f, "Fail to load lao dictionary: {msg}"),
-            LibError::Puncutation(msg) => write!(f, "Unable to retrieve the punctuation: {msg}")
+            DictionaryError::Serialize(msg) => write!(f, "Fail to serialize due to: {msg}"),
+            DictionaryError::Utf8(msg) => write!(f, "Fail to convert utf-8 to string: {msg}"),
+            DictionaryError::ChineseDictionary(msg) => {
+                write!(f, "Fail to load chinese dinctionary: {msg}")
+            }
+            DictionaryError::LaoDictionary(msg) => write!(f, "Fail to load lao dictionary: {msg}"),
+            DictionaryError::Puncutation(msg) => {
+                write!(f, "Unable to retrieve the punctuation: {msg}")
+            }
         }
     }
 }
 
-impl std::error::Error for LibError{}
+impl std::error::Error for DictionaryError {}
 
-impl From<csv::Error> for LibError {
+impl From<csv::Error> for DictionaryError {
     fn from(err: csv::Error) -> Self {
-        LibError::Serialize(err.to_string())
+        DictionaryError::Serialize(err.to_string())
     }
 }
 
-impl From<FromUtf8Error> for LibError {
+impl From<FromUtf8Error> for DictionaryError {
     fn from(err: FromUtf8Error) -> Self {
-        LibError::Utf8(err.to_string())   
+        DictionaryError::Utf8(err.to_string())
     }
 }
 
-impl From<serde_json::Error> for LibError {
+impl From<serde_json::Error> for DictionaryError {
     fn from(err: serde_json::Error) -> Self {
-        LibError::Puncutation(err.to_string())
+        DictionaryError::Puncutation(err.to_string())
     }
 }
