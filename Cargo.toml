@@ -13,6 +13,7 @@ chamkho = { git = "https://github.com/veer66/chamkho.git", tag = "1.4.1" }
 dodo-zh = "0.1.5"
 
 [features]
+all = ["chinese", "laotian"]
 chinese = []
 laotian = []
 

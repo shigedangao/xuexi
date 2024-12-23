@@ -1,7 +1,7 @@
 use crate::{error::DictionaryError, word::Word};
+use chamkho::Wordcut;
 use dodo_zh::variant::KeyVariant;
 use std::{collections::HashMap, marker::PhantomData, path::PathBuf};
-use chamkho::Wordcut;
 
 pub enum Lang {
     Chinese(KeyVariant),

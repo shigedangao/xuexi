@@ -2,7 +2,7 @@ use crate::dictionary::{Chinese, Dictionary, Initializer, Lang};
 use crate::error::DictionaryError;
 use crate::punctuation;
 use crate::util;
-use crate::word::{Word, WordParser};
+use crate::word::{Word, WordParser, WordParserResult};
 use dodo_zh::cedict::Item;
 use std::collections::{BTreeMap, HashMap};
 use std::marker::PhantomData;
@@ -44,7 +44,7 @@ impl Initializer<Chinese> for Dictionary<Chinese> {
 }
 
 impl WordParser for Dictionary<Chinese> {
-    fn parse_sentence_into_words<S: AsRef<str>>(&self, sentence: S) -> BTreeMap<String, Word> {
+    fn parse_sentence_into_words<S: AsRef<str>>(&self, sentence: S) -> WordParserResult {
         // Collections
         let mut words = BTreeMap::new();
         // Cursors
@@ -59,7 +59,7 @@ impl WordParser for Dictionary<Chinese> {
         // temp definition
         let (mut step_found_word, mut step_found_word_str) = (Word::default(), String::default());
         while let Some(chars) = sentence_chars.get(start_cursor..end_cursor) {
-            let word = chars.into_iter().collect::<String>();
+            let word = chars.iter().collect::<String>();
             // create a word based on the start cursor and the end cursor
             match self.dict.get(&word) {
                 Some(res) => {

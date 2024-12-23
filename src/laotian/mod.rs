@@ -1,6 +1,6 @@
 use crate::dictionary::{Dictionary, Initializer, Lang, Laotian};
 use crate::error::DictionaryError;
-use crate::word::{Word, WordParser};
+use crate::word::{Word, WordParser, WordParserResult};
 use crate::{punctuation, util};
 use serde::Deserialize;
 use std::collections::{BTreeMap, HashMap};
@@ -76,7 +76,7 @@ impl Initializer<Laotian> for Dictionary<Laotian> {
 }
 
 impl WordParser for Dictionary<Laotian> {
-    fn parse_sentence_into_words<S: AsRef<str>>(&self, sentence: S) -> BTreeMap<String, Word> {
+    fn parse_sentence_into_words<S: AsRef<str>>(&self, sentence: S) -> WordParserResult {
         let mut founded = BTreeMap::new();
         // clean the string first
         let cleaned_sentence = util::clean_sentence(sentence.as_ref(), &self.punctuation);
