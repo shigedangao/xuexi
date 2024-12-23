@@ -1,4 +1,4 @@
-# Xuexie 學習
+# Xuexi 學習
 
 A library which parse a dictionary in order to return a list of most used word / character within a text or a sentence.
 
@@ -33,11 +33,15 @@ xuexi = { version = "0.1.0", features = ["chinese"] }
 Then you can import the dictionary like so
 
 ```rs
-let chinese = xuexi::load_chinese_dictionnary();
+let chinese = xuexi::load_chinese_dictionary(
+    Lang::Chinese(KeyVariant::Traditional),
+    PathBuf::from("./cedict_ts.u8"),
+).unwrap();
+
 let sentence = "今天天氣很熱非常熱";
 
 // hashamp
-let list = chinese.get_list_detected_words(sentence).unwrap();
+let list = chinese.parse_sentence_into_words(sentence);
 let definition = list.get("熱").unwrap();
 
 println!("{}", definition.count) // this will print 2
@@ -46,10 +50,10 @@ println!("{}", definition.count) // this will print 2
 ### Laotian
 
 ```rs
-let lao = xuexi::load_laotian_dictionnary().unwrap();
+let lao = xuexi::xuexi::load_laotian_dictionary(PathBuf::from("./lao-eng-dictionary.csv")).unwrap();
 let sentence = "ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ";
 
-let list = lao.get_list_detected_words(sentence).unwrap();
+let list = lao.parse_sentence_into_words(sentence);
 let eat = list.get("ກິນ").unwrap();
 
 println!("{}", eat.pronounciation) // this will print "kin"

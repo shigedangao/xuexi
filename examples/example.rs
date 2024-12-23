@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use std::thread;
 use xuexi::{
     dictionary::{Chinese, Dictionary, Lang, Laotian},
+    export::Export,
     word::WordParser,
     KeyVariant,
 };
@@ -11,6 +12,7 @@ fn main() {
 
     chinese_example(&cn);
     lao_example(&la);
+    chinese_example_to_csv(&cn);
 }
 
 // Load dictionary in thread to make the example quicker
@@ -57,4 +59,15 @@ fn lao_example(lao: &Dictionary<Laotian>) {
     assert_eq!(eat.written, vec!["ກິນ"]);
     assert_eq!(eat.pronunciations.get(0).unwrap(), "kin");
     assert_eq!(eat.translations.get(0).unwrap(), "eat");
+}
+
+fn chinese_example_to_csv(chinese: &Dictionary<Chinese>) {
+    let sentence = "摯友是一個很難過的音樂";
+
+    let list = chinese.parse_sentence_into_words(sentence);
+    let csv = list.to_csv();
+
+    dbg!(&csv);
+
+    assert!(csv.is_ok());
 }

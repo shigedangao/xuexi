@@ -17,6 +17,7 @@ use dictionary::{Chinese, Initializer, Lang, Laotian};
 
 #[allow(unused_imports)]
 use std::{collections::BTreeMap, path::PathBuf};
+#[allow(unused_imports)]
 use word::{Word, WordParser};
 
 // Re export KeyVariant

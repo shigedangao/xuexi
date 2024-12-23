@@ -5,7 +5,6 @@ use serde::Deserialize;
 pub struct Puncutation {
     pub chinese: Vec<String>,
     pub laotian: Vec<String>,
-    pub western: Vec<String>,
 }
 
 impl Puncutation {

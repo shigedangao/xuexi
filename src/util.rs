@@ -4,7 +4,7 @@
 ///
 /// * `sentence` - A slice of string which represent a sentence
 /// * `punctuations`
-pub fn clean_sentence<S: AsRef<str>>(sentence: S, punctuations: &Vec<String>) -> String {
+pub fn clean_sentence<S: AsRef<str>>(sentence: S, punctuations: &[String]) -> String {
     let mut filtered_sentence = sentence.as_ref().to_string();
     punctuations
         .iter()

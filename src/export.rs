@@ -1,6 +1,12 @@
 use crate::error::DictionaryError;
 use csv::Writer;
-use serde::Serialize;
+use serde::{Serialize, Serializer};
+
+pub trait Export {
+    /// Export a a type to CSV
+    ///     - Definitions: In this case this will return a csv of definitions
+    fn to_csv(&self) -> Result<String, DictionaryError>;
+}
 
 /// Helper method to export a vec of items which implement the Serialize trait
 /// to a CSV string representation
@@ -23,9 +29,14 @@ pub fn export_to_csv<T: Serialize>(items: Vec<T>) -> Result<String, DictionaryEr
     Ok(res)
 }
 
-pub trait Export {
-    /// Export a a type to CSV
-    ///     - Definitions: In this case this will return a csv of definitions
-    ///     - Character count: This is gonna return the character and the count amount
-    fn to_csv(&self) -> Result<String, DictionaryError>;
+// Utility method to convert a vec into a string for the csv library
+pub fn serialize_vec_to_string<S, T>(items: &[T], s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    T: AsRef<str>,
+{
+    let str_vec: Vec<String> = items.iter().map(|s| s.as_ref().to_string()).collect();
+    let str = str_vec.join(",");
+
+    s.serialize_str(&str)
 }
