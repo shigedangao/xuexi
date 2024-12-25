@@ -10,8 +10,8 @@ keywords = ["chinese", "cedict", "lao", "lao language"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 csv = "1.3.1"
-chamkho = { git = "https://github.com/veer66/chamkho.git", tag = "1.4.1" }
 dodo-zh = "0.1.5"
+chamkho = "=1.4.0"
 
 [features]
 all = ["chinese", "laotian"]
