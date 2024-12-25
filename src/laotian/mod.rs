@@ -2,11 +2,11 @@ use crate::dictionary::{Dictionary, Initializer, Lang, Laotian};
 use crate::error::DictionaryError;
 use crate::word::{Word, WordParser, WordParserResult};
 use crate::{punctuation, util};
+use chamkho::wordcut_engine::create_prefix_tree;
 use serde::Deserialize;
 use std::collections::{BTreeMap, HashMap};
+use std::ops::Deref;
 use std::path::PathBuf;
-
-pub mod wrapper;
 
 /// Used for parsing the dictionnary
 #[derive(Debug, Clone, Deserialize)]
@@ -26,15 +26,12 @@ impl Initializer<Laotian> for Dictionary<Laotian> {
     /// * `params` - Lang
     fn initialize(_: Lang) -> Result<Dictionary<Laotian>, DictionaryError> {
         let p = punctuation::Puncutation::new()?;
-        // preload the wordcut dictionnary
-        let dic = wrapper::load_laotian_words()?;
-        let wordcut = chamkho::Wordcut::new(dic);
 
         Ok(Dictionary {
             _lang: std::marker::PhantomData::<Laotian>,
             dict: HashMap::new(),
             punctuation: p.laotian,
-            params: Lang::Laotian(Some(Box::new(wordcut))),
+            params: Lang::Laotian(None),
         })
     }
 
@@ -49,6 +46,7 @@ impl Initializer<Laotian> for Dictionary<Laotian> {
     /// * `&mut self` - Self
     fn load(&mut self, path: PathBuf) -> Result<(), DictionaryError> {
         let mut dict = HashMap::new();
+        let mut chamkho_tree = Vec::new();
 
         // reading the csv
         let mut reader = csv::Reader::from_path(path)?;
@@ -66,10 +64,18 @@ impl Initializer<Laotian> for Dictionary<Laotian> {
                 count: 0,
             };
 
+            chamkho_tree.push(key.clone());
+
             dict.insert(key, def);
         }
 
+        // Create the chamkho parser instance from the laotian word that has been founded
+        let prefix_tree: Vec<&str> = chamkho_tree.iter().map(|d| d.deref()).collect();
+        let tree = create_prefix_tree(&prefix_tree);
+        let wordcut = chamkho::Wordcut::new(tree);
+
         self.dict = dict;
+        self.params = Lang::Laotian(Some(Box::new(wordcut)));
 
         Ok(())
     }
@@ -137,14 +143,13 @@ mod tests {
     #[test]
     fn expect_to_get_list_word_for_sentence() {
         let words = DICTIONARY.parse_sentence_into_words("ລູກຫລ້າຢາກໄດ້ກິນຫຍັງ");
-
-        let baby = words.get("ລູກ");
+        let baby = words.get("ລູກຫລ້າ");
         assert!(baby.is_some());
 
         let baby = baby.unwrap();
-        assert_eq!(baby.written.first().unwrap(), "ລູກ");
-        assert_eq!(baby.pronunciations.first().unwrap(), "lù:k");
-        assert_eq!(baby.translations, vec!["downstairs"]);
+        assert_eq!(baby.written.first().unwrap(), "ລູກຫລ້າ");
+        assert_eq!(baby.pronunciations.first().unwrap(), "lù:k lar");
+        assert_eq!(baby.translations, vec!["youngest child"]);
     }
 
     #[test]

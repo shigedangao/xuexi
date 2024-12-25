@@ -1,21 +1,20 @@
-# Xuexi 學習
+# Xuexi 學習 🤓
 
-A library which parse a dictionary in order to return a list of most used word / character within a text or a sentence.
+A library which parse dictionaries from various format allowing you to query the definition of each word based on the given sentence.
 
 ## Supported language
 
 All of these dictionaries are available on the internet. Big thanks to them for putting up these dictionaries. So far only these 2 languages are supported for personnal usage in future project and language learning
 
 - Chinese by using the [cedict dictionnary](https://www.mdbg.net/chinese/dictionary?page=cedict)
-- Laotian dictionary provided by the [LaoNLP repository](https://github.com/wannaphong/LaoNLP/blob/af9bae55b7265c740855787960ba6c1a357063fd/laonlp/corpus/lao-eng-dictionary.csv). Note that it has been edited to remove the index
-- Lao words provided by [lao-dictionary repository](https://github.com/rober42539/lao-dictionary) and parsing provided by the [chamkho repository](https://github.com/veer66/chamkho)
+- Laotian dictionary provided by the [LaoNLP repository](https://github.com/wannaphong/LaoNLP/blob/af9bae55b7265c740855787960ba6c1a357063fd/laonlp/corpus/lao-eng-dictionary.csv). The Laotian language parser uses the [chamkho library](https://github.com/veer66/chamkho)
 
 ## Example
 
 An example can be found in the `examples` folder. The example can be run with the command
 
 ```sh
-cargo run --example example --features="chinese, laotian"
+cargo run --example example --features="all"
 ```
 
 ## Usage
@@ -27,7 +26,7 @@ The library is feature gates. Below are example for the supported languages
 In the Cargo.toml file, add these line below
 
 ```toml
-xuexi = { version = "0.1.0", features = ["chinese"] }
+xuexi = { version = "0.1.5", features = ["all"] }
 ```
 
 Then you can import the dictionary like so
