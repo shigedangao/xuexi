@@ -3,6 +3,7 @@ name = "xuexi"
 version = "0.1.5"
 edition = "2021"
 keywords = ["chinese", "cedict", "lao", "lao language"]
+exclude = [".vscode", ".github", ".editorconfig"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
