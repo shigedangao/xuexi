@@ -1,7 +1,7 @@
 [package]
 name = "xuexi"
 version = "0.1.5"
-edition = "2021"
+edition = "2024"
 keywords = ["chinese", "cedict", "lao", "laotian"]
 exclude = [".vscode", ".github", ".editorconfig"]
 description = "utility to parse a sentence into words for multiple language"

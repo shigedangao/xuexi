@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 use std::thread;
 use xuexi::{
+    KeyVariant,
     dictionary::{Chinese, Dictionary, Lang, Laotian},
     export::Export,
     word::WordParser,
-    KeyVariant,
 };
 
 fn main() {
